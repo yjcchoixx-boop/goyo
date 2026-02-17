@@ -400,3 +400,317 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+
+// 심리상담 연계 시스템 테이블 추가
+function initCounselingTables() {
+  // 상담사 테이블
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS counselors (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      specialization TEXT NOT NULL,
+      phone TEXT,
+      email TEXT,
+      license_number TEXT,
+      availability_status TEXT DEFAULT 'available',
+      current_load INTEGER DEFAULT 0,
+      max_capacity INTEGER DEFAULT 8,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  
+  // 상담 세션 테이블
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS counseling_sessions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      worker_id INTEGER NOT NULL,
+      counselor_id INTEGER,
+      session_type TEXT NOT NULL,
+      status TEXT DEFAULT 'scheduled',
+      priority TEXT DEFAULT 'medium',
+      scheduled_date TEXT NOT NULL,
+      completed_date TEXT,
+      duration INTEGER DEFAULT 60,
+      session_notes TEXT,
+      auto_linked BOOLEAN DEFAULT 0,
+      alert_id INTEGER,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (worker_id) REFERENCES care_workers(id),
+      FOREIGN KEY (counselor_id) REFERENCES counselors(id),
+      FOREIGN KEY (alert_id) REFERENCES risk_alerts(id)
+    )
+  `);
+  
+  // 상담 이력 테이블
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS counseling_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id INTEGER NOT NULL,
+      session_date TEXT NOT NULL,
+      counselor_id INTEGER NOT NULL,
+      worker_id INTEGER NOT NULL,
+      result TEXT,
+      follow_up_needed BOOLEAN DEFAULT 0,
+      follow_up_date TEXT,
+      notes TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (session_id) REFERENCES counseling_sessions(id),
+      FOREIGN KEY (counselor_id) REFERENCES counselors(id),
+      FOREIGN KEY (worker_id) REFERENCES care_workers(id)
+    )
+  `);
+  
+  // 샘플 상담사 데이터
+  const counselorCount = db.prepare('SELECT COUNT(*) as count FROM counselors').get();
+  if (counselorCount.count === 0) {
+    insertCounselorSampleData();
+  }
+}
+
+function insertCounselorSampleData() {
+  const insertCounselor = db.prepare(`
+    INSERT INTO counselors (name, specialization, phone, email, license_number, availability_status, current_load, max_capacity)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  
+  const counselors = [
+    ['박지은', '번아웃 전문', '010-1111-2222', 'park@counsel.kr', 'PSY-2020-1234', 'available', 3, 8],
+    ['김태수', '스트레스 관리', '010-2222-3333', 'kim@counsel.kr', 'PSY-2019-5678', 'available', 5, 8],
+    ['이민지', '직장 내 관계', '010-3333-4444', 'lee@counsel.kr', 'PSY-2021-9012', 'available', 2, 8],
+    ['정수현', '감정 코칭', '010-4444-5555', 'jung@counsel.kr', 'PSY-2018-3456', 'busy', 7, 8],
+    ['최현우', '위기 개입', '010-5555-6666', 'choi@counsel.kr', 'PSY-2020-7890', 'available', 4, 8]
+  ];
+  
+  counselors.forEach(counselor => insertCounselor.run(counselor));
+  
+  // 샘플 상담 세션 생성
+  const insertSession = db.prepare(`
+    INSERT INTO counseling_sessions (worker_id, counselor_id, session_type, status, priority, scheduled_date, auto_linked, alert_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  
+  const now = new Date();
+  
+  // 김미영 - 자동 연계 세션 (고위험)
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  insertSession.run(1, 1, '긴급 개입', 'scheduled', 'high', tomorrow.toISOString(), 1, 1);
+  
+  // 최민준 - 예약 세션
+  const nextWeek = new Date(now);
+  nextWeek.setDate(nextWeek.getDate() + 7);
+  insertSession.run(4, 2, '스트레스 관리', 'scheduled', 'medium', nextWeek.toISOString(), 0, 2);
+  
+  // 이정수 - 완료된 세션
+  const lastWeek = new Date(now);
+  lastWeek.setDate(lastWeek.getDate() - 7);
+  const completedSession = db.prepare(`
+    INSERT INTO counseling_sessions (worker_id, counselor_id, session_type, status, priority, scheduled_date, completed_date, session_notes, auto_linked)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  completedSession.run(2, 3, '정기 상담', 'completed', 'low', lastWeek.toISOString(), now.toISOString(), '상태 양호, 스트레스 관리 잘 하고 있음', 0);
+  
+  // 상담 이력 추가
+  const insertHistory = db.prepare(`
+    INSERT INTO counseling_history (session_id, session_date, counselor_id, worker_id, result, follow_up_needed, notes)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `);
+  insertHistory.run(3, now.toISOString(), 3, 2, '긍정적', 0, '월 1회 정기 상담으로 충분');
+}
+
+// 상담 연계 IPC 핸들러
+ipcMain.handle('get-counseling-stats', () => {
+  const scheduled = db.prepare('SELECT COUNT(*) as count FROM counseling_sessions WHERE status = "scheduled"').get();
+  const activeCounselors = db.prepare('SELECT COUNT(*) as count FROM counselors WHERE availability_status = "available"').get();
+  const completed = db.prepare('SELECT COUNT(*) as count FROM counseling_sessions WHERE status = "completed"').get();
+  const autoLinked = db.prepare('SELECT COUNT(*) as count FROM counseling_sessions WHERE auto_linked = 1').get();
+  
+  return {
+    scheduled: scheduled.count,
+    activeCounselors: activeCounselors.count,
+    completed: completed.count,
+    autoLinked: autoLinked.count
+  };
+});
+
+ipcMain.handle('get-counseling-sessions', (event, filters = {}) => {
+  let query = `
+    SELECT cs.*, cw.name as worker_name, cw.role as worker_role, 
+           co.name as counselor_name, co.specialization
+    FROM counseling_sessions cs
+    LEFT JOIN care_workers cw ON cs.worker_id = cw.id
+    LEFT JOIN counselors co ON cs.counselor_id = co.id
+    WHERE 1=1
+  `;
+  const params = [];
+  
+  if (filters.status && filters.status !== 'all') {
+    query += ' AND cs.status = ?';
+    params.push(filters.status);
+  }
+  
+  if (filters.session_type && filters.session_type !== 'all') {
+    query += ' AND cs.session_type = ?';
+    params.push(filters.session_type);
+  }
+  
+  query += ' ORDER BY cs.scheduled_date DESC';
+  
+  return db.prepare(query).all(...params);
+});
+
+ipcMain.handle('get-counselors', () => {
+  return db.prepare('SELECT * FROM counselors ORDER BY name').all();
+});
+
+ipcMain.handle('add-counselor', (event, counselor) => {
+  const stmt = db.prepare(`
+    INSERT INTO counselors (name, specialization, phone, email, license_number, max_capacity)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+  return stmt.run(
+    counselor.name,
+    counselor.specialization,
+    counselor.phone,
+    counselor.email,
+    counselor.license_number,
+    counselor.max_capacity || 8
+  );
+});
+
+ipcMain.handle('update-counselor', (event, id, counselor) => {
+  const stmt = db.prepare(`
+    UPDATE counselors
+    SET name = ?, specialization = ?, phone = ?, email = ?, license_number = ?
+    WHERE id = ?
+  `);
+  return stmt.run(
+    counselor.name,
+    counselor.specialization,
+    counselor.phone,
+    counselor.email,
+    counselor.license_number,
+    id
+  );
+});
+
+ipcMain.handle('create-counseling-session', (event, session) => {
+  const stmt = db.prepare(`
+    INSERT INTO counseling_sessions (worker_id, counselor_id, session_type, priority, scheduled_date, auto_linked, alert_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `);
+  
+  // 상담사 current_load 증가
+  if (session.counselor_id) {
+    db.prepare('UPDATE counselors SET current_load = current_load + 1 WHERE id = ?').run(session.counselor_id);
+  }
+  
+  return stmt.run(
+    session.worker_id,
+    session.counselor_id,
+    session.session_type,
+    session.priority,
+    session.scheduled_date,
+    session.auto_linked || 0,
+    session.alert_id || null
+  );
+});
+
+ipcMain.handle('auto-link-counseling', (event, workerId, alertId) => {
+  // 가용한 상담사 찾기 (번아웃 전문 우선)
+  const counselor = db.prepare(`
+    SELECT * FROM counselors 
+    WHERE availability_status = 'available' 
+    AND current_load < max_capacity
+    ORDER BY 
+      CASE WHEN specialization LIKE '%번아웃%' THEN 1 ELSE 2 END,
+      current_load ASC
+    LIMIT 1
+  `).get();
+  
+  if (!counselor) {
+    throw new Error('가용한 상담사가 없습니다');
+  }
+  
+  // 내일 날짜로 긴급 상담 세션 생성
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(10, 0, 0, 0);
+  
+  const stmt = db.prepare(`
+    INSERT INTO counseling_sessions (worker_id, counselor_id, session_type, status, priority, scheduled_date, auto_linked, alert_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  
+  const result = stmt.run(
+    workerId,
+    counselor.id,
+    '긴급 개입',
+    'scheduled',
+    'high',
+    tomorrow.toISOString(),
+    1,
+    alertId
+  );
+  
+  // 상담사 load 증가
+  db.prepare('UPDATE counselors SET current_load = current_load + 1 WHERE id = ?').run(counselor.id);
+  
+  return {
+    sessionId: result.lastInsertRowid,
+    counselor: counselor,
+    scheduledDate: tomorrow
+  };
+});
+
+ipcMain.handle('update-session-status', (event, sessionId, status, notes) => {
+  const completedDate = status === 'completed' ? new Date().toISOString() : null;
+  
+  const stmt = db.prepare(`
+    UPDATE counseling_sessions
+    SET status = ?, completed_date = ?, session_notes = ?
+    WHERE id = ?
+  `);
+  
+  const result = stmt.run(status, completedDate, notes, sessionId);
+  
+  // 완료 시 상담사 load 감소
+  if (status === 'completed') {
+    const session = db.prepare('SELECT counselor_id FROM counseling_sessions WHERE id = ?').get(sessionId);
+    if (session && session.counselor_id) {
+      db.prepare('UPDATE counselors SET current_load = current_load - 1 WHERE id = ?').run(session.counselor_id);
+    }
+  }
+  
+  return result;
+});
+
+ipcMain.handle('get-counseling-history', (event, workerId) => {
+  return db.prepare(`
+    SELECT ch.*, co.name as counselor_name, co.specialization,
+           cs.session_type
+    FROM counseling_history ch
+    LEFT JOIN counselors co ON ch.counselor_id = co.id
+    LEFT JOIN counseling_sessions cs ON ch.session_id = cs.id
+    WHERE ch.worker_id = ?
+    ORDER BY ch.session_date DESC
+  `).all(workerId);
+});
+
+ipcMain.handle('add-counseling-history', (event, history) => {
+  const stmt = db.prepare(`
+    INSERT INTO counseling_history (session_id, session_date, counselor_id, worker_id, result, follow_up_needed, follow_up_date, notes)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  return stmt.run(
+    history.session_id,
+    history.session_date,
+    history.counselor_id,
+    history.worker_id,
+    history.result,
+    history.follow_up_needed ? 1 : 0,
+    history.follow_up_date || null,
+    history.notes
+  );
+});
+

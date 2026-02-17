@@ -58,6 +58,9 @@ async function switchView(view) {
     case 'reports':
       await loadReports();
       break;
+    case 'counseling':
+      await loadCounselingView();
+      break;
   }
 }
 
@@ -68,6 +71,14 @@ async function loadDashboard() {
     const stats = await ipcRenderer.invoke('get-dashboard-stats');
     workers = await ipcRenderer.invoke('get-workers');
     alerts = await ipcRenderer.invoke('get-risk-alerts', 'pending');
+    
+    // 상담 통계 가져오기
+    try {
+      const counselingStats = await ipcRenderer.invoke('get-counseling-stats');
+      document.getElementById('dashboard-scheduled-sessions').textContent = counselingStats.scheduled_sessions;
+    } catch (e) {
+      document.getElementById('dashboard-scheduled-sessions').textContent = '0';
+    }
     
     // 통계 업데이트
     document.getElementById('total-workers').textContent = stats.totalWorkers;
@@ -1125,3 +1136,442 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+
+// ==================== 심리상담 연계 시스템 ====================
+
+// 심리상담 데이터 로드
+async function loadCounselingView() {
+  await loadCounselingStats();
+  await loadSessions();
+  await loadCounselors();
+  await loadCounselingHistory();
+}
+
+// 상담 통계 로드
+async function loadCounselingStats() {
+  try {
+    const stats = await window.api.invoke('get-counseling-stats');
+    document.getElementById('scheduled-sessions').textContent = stats.scheduled_sessions;
+    document.getElementById('active-counselors').textContent = stats.active_counselors;
+    document.getElementById('completed-sessions').textContent = stats.completed_sessions;
+    document.getElementById('auto-linked').textContent = stats.auto_linked_count;
+    document.getElementById('counseling-badge').textContent = stats.scheduled_sessions;
+  } catch (error) {
+    console.error('상담 통계 로드 실패:', error);
+  }
+}
+
+// 상담 세션 로드
+async function loadSessions() {
+  try {
+    const sessions = await window.api.invoke('get-counseling-sessions');
+    const tbody = document.getElementById('sessions-table-body');
+    
+    if (!sessions || sessions.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="empty-state-icon">📭</div><h3>등록된 상담이 없습니다</h3><p>고위험군이 감지되면 자동으로 연계됩니다.</p></td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = sessions.map(session => `
+      <tr>
+        <td>
+          <div>
+            <strong>${session.worker_name || '-'}</strong>
+            <div style="font-size: 0.85rem; color: #8e9aaf;">${session.worker_role || ''}</div>
+          </div>
+        </td>
+        <td>
+          <div>
+            <strong>${session.counselor_name || '-'}</strong>
+            <div style="font-size: 0.85rem; color: #8e9aaf;">${session.counselor_license || ''}</div>
+          </div>
+        </td>
+        <td>${session.session_date ? new Date(session.session_date).toLocaleString('ko-KR') : '-'}</td>
+        <td>
+          <span class="session-type ${session.session_type}">
+            ${session.session_type === 'auto' ? '🔗 자동 연계' : '📝 수동 생성'}
+          </span>
+        </td>
+        <td>
+          <span class="priority-badge ${session.priority}">
+            ${session.priority === 'urgent' ? '🚨 긴급' : session.priority === 'high' ? '⚠️높음' : '✅ 보통'}
+          </span>
+        </td>
+        <td>
+          <span class="session-status ${session.status}">
+            ${getSessionStatusText(session.status)}
+          </span>
+        </td>
+        <td>
+          ${session.status === 'scheduled' ? 
+            `<button class="btn btn-sm btn-success" onclick="startSession(${session.id})">시작</button>
+             <button class="btn btn-sm btn-danger" onclick="cancelSession(${session.id})">취소</button>` :
+            session.status === 'in_progress' ?
+            `<button class="btn btn-sm btn-primary" onclick="completeSession(${session.id})">완료</button>` :
+            `<button class="btn btn-sm btn-secondary" onclick="viewSessionDetails(${session.id})">상세</button>`
+          }
+        </td>
+      </tr>
+    `).join('');
+  } catch (error) {
+    console.error('상담 세션 로드 실패:', error);
+  }
+}
+
+// 상담사 로드
+async function loadCounselors() {
+  try {
+    const counselors = await window.api.invoke('get-counselors');
+    const grid = document.getElementById('counselors-grid');
+    
+    if (!counselors || counselors.length === 0) {
+      grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👨‍⚕️</div><h3>등록된 상담사가 없습니다</h3><p>상담사를 추가해주세요.</p></div>';
+      return;
+    }
+    
+    grid.innerHTML = counselors.map(counselor => {
+      const specialties = counselor.specialties.split(',').map(s => s.trim());
+      const loadPercent = Math.min(100, (counselor.current_load / counselor.max_capacity) * 100);
+      const statusText = counselor.availability === 'available' ? '가능' : 
+                        counselor.availability === 'busy' ? '바쁨' : '불가능';
+      
+      return `
+        <div class="counselor-card" data-counselor-id="${counselor.id}">
+          <div class="counselor-header">
+            <div class="counselor-info">
+              <h4>${counselor.name}</h4>
+              <p>${counselor.license}</p>
+            </div>
+            <span class="counselor-status ${counselor.availability}">${statusText}</span>
+          </div>
+          
+          <div class="counselor-specialties">
+            <h5>전문 분야</h5>
+            <div class="specialty-tags">
+              ${specialties.map(s => `<span class="specialty-tag">${s}</span>`).join('')}
+            </div>
+          </div>
+          
+          <div class="counselor-stats">
+            <div class="counselor-stat">
+              <div class="counselor-stat-value">${counselor.current_load}</div>
+              <div class="counselor-stat-label">진행중</div>
+            </div>
+            <div class="counselor-stat">
+              <div class="counselor-stat-value">${counselor.max_capacity}</div>
+              <div class="counselor-stat-label">최대 용량</div>
+            </div>
+            <div class="counselor-stat">
+              <div class="counselor-stat-value">${counselor.total_sessions || 0}</div>
+              <div class="counselor-stat-label">총 상담</div>
+            </div>
+          </div>
+          
+          <div class="counselor-load-bar">
+            <label>가동률: ${Math.round(loadPercent)}%</label>
+            <div class="load-bar">
+              <div class="load-bar-fill" style="width: ${loadPercent}%"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    // 상담사 카드 클릭 이벤트
+    document.querySelectorAll('.counselor-card').forEach(card => {
+      card.addEventListener('click', function() {
+        const counselorId = this.dataset.counselorId;
+        editCounselor(counselorId);
+      });
+    });
+  } catch (error) {
+    console.error('상담사 로드 실패:', error);
+  }
+}
+
+// 상담 이력 로드
+async function loadCounselingHistory() {
+  try {
+    const history = await window.api.invoke('get-counseling-history');
+    const timeline = document.getElementById('history-timeline');
+    
+    if (!history || history.length === 0) {
+      timeline.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><h3>상담 이력이 없습니다</h3><p>완료된 상담이 없습니다.</p></div>';
+      return;
+    }
+    
+    timeline.innerHTML = history.map(item => `
+      <div class="history-item">
+        <div class="history-item-date">${new Date(item.created_at).toLocaleString('ko-KR')}</div>
+        <div class="history-item-content">
+          <div class="history-item-title">
+            ${item.worker_name} ↔ ${item.counselor_name}
+          </div>
+          <div class="history-item-text">
+            <strong>상담 결과:</strong> ${item.outcome || '-'}<br>
+            ${item.notes ? `<strong>메모:</strong> ${item.notes}` : ''}
+          </div>
+          <div class="history-item-footer">
+            <span>📅 ${new Date(item.session_date).toLocaleDateString('ko-KR')}</span>
+            ${item.follow_up_date ? `<span>🔄 후속 상담: ${new Date(item.follow_up_date).toLocaleDateString('ko-KR')}</span>` : ''}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error('상담 이력 로드 실패:', error);
+  }
+}
+
+// 탭 전환
+function setupCounselingTabs() {
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+  
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const tabName = this.dataset.tab;
+      
+      // 모든 탭 비활성화
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(c => c.classList.remove('active'));
+      
+      // 선택된 탭 활성화
+      this.classList.add('active');
+      document.getElementById(`${tabName}-tab`).classList.add('active');
+      
+      // 탭별 데이터 로드
+      if (tabName === 'sessions') loadSessions();
+      else if (tabName === 'counselors') loadCounselors();
+      else if (tabName === 'history') loadCounselingHistory();
+    });
+  });
+}
+
+// 상담사 추가 모달
+function openCounselorModal(counselorId = null) {
+  const modal = document.getElementById('counselor-modal');
+  const form = document.getElementById('counselor-form');
+  const title = document.getElementById('counselor-modal-title');
+  
+  form.reset();
+  
+  if (counselorId) {
+    title.textContent = '상담사 수정';
+    // 상담사 정보 로드
+    window.api.invoke('get-counselors').then(counselors => {
+      const counselor = counselors.find(c => c.id === parseInt(counselorId));
+      if (counselor) {
+        document.getElementById('counselor-id').value = counselor.id;
+        document.getElementById('counselor-name').value = counselor.name;
+        document.getElementById('counselor-license').value = counselor.license;
+        document.getElementById('counselor-specialties').value = counselor.specialties;
+        document.getElementById('counselor-phone').value = counselor.phone;
+        document.getElementById('counselor-email').value = counselor.email;
+        document.getElementById('counselor-availability').value = counselor.availability;
+      }
+    });
+  } else {
+    title.textContent = '상담사 추가';
+    document.getElementById('counselor-id').value = '';
+  }
+  
+  modal.classList.add('active');
+}
+
+function closeCounselorModal() {
+  document.getElementById('counselor-modal').classList.remove('active');
+}
+
+// 상담사 저장
+document.getElementById('counselor-form')?.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const id = document.getElementById('counselor-id').value;
+  const data = {
+    name: document.getElementById('counselor-name').value,
+    license: document.getElementById('counselor-license').value,
+    specialties: document.getElementById('counselor-specialties').value,
+    phone: document.getElementById('counselor-phone').value,
+    email: document.getElementById('counselor-email').value,
+    availability: document.getElementById('counselor-availability').value
+  };
+  
+  try {
+    if (id) {
+      await window.api.invoke('update-counselor', { id: parseInt(id), ...data });
+    } else {
+      await window.api.invoke('add-counselor', data);
+    }
+    
+    closeCounselorModal();
+    await loadCounselors();
+    await loadCounselingStats();
+  } catch (error) {
+    console.error('상담사 저장 실패:', error);
+    alert('저장에 실패했습니다: ' + error.message);
+  }
+});
+
+// 상담사 추가 버튼
+document.getElementById('add-counselor-btn')?.addEventListener('click', () => {
+  openCounselorModal();
+});
+
+// 상담사 수정
+function editCounselor(counselorId) {
+  openCounselorModal(counselorId);
+}
+
+// 세션 상태 변경
+async function startSession(sessionId) {
+  try {
+    await window.api.invoke('update-session-status', { 
+      session_id: sessionId, 
+      status: 'in_progress' 
+    });
+    await loadSessions();
+    await loadCounselingStats();
+  } catch (error) {
+    console.error('세션 시작 실패:', error);
+    alert('세션 시작에 실패했습니다: ' + error.message);
+  }
+}
+
+async function completeSession(sessionId) {
+  const outcome = prompt('상담 결과를 입력하세요:');
+  const notes = prompt('추가 메모 (선택사항):');
+  
+  if (outcome) {
+    try {
+      await window.api.invoke('update-session-status', { 
+        session_id: sessionId, 
+        status: 'completed',
+        outcome: outcome,
+        notes: notes
+      });
+      
+      await window.api.invoke('add-counseling-history', {
+        session_id: sessionId,
+        outcome: outcome,
+        notes: notes
+      });
+      
+      await loadSessions();
+      await loadCounselingStats();
+      await loadCounselingHistory();
+    } catch (error) {
+      console.error('세션 완료 실패:', error);
+      alert('세션 완료에 실패했습니다: ' + error.message);
+    }
+  }
+}
+
+async function cancelSession(sessionId) {
+  if (confirm('정말로 이 상담을 취소하시겠습니까?')) {
+    try {
+      await window.api.invoke('update-session-status', { 
+        session_id: sessionId, 
+        status: 'cancelled' 
+      });
+      await loadSessions();
+      await loadCounselingStats();
+    } catch (error) {
+      console.error('세션 취소 실패:', error);
+      alert('세션 취소에 실패했습니다: ' + error.message);
+    }
+  }
+}
+
+function viewSessionDetails(sessionId) {
+  alert('상세 보기 기능은 추후 구현 예정입니다.');
+}
+
+// 세션 상태 텍스트
+function getSessionStatusText(status) {
+  const statusMap = {
+    'scheduled': '📅 예정됨',
+    'in_progress': '⏳ 진행중',
+    'completed': '✅ 완료됨',
+    'cancelled': '❌ 취소됨'
+  };
+  return statusMap[status] || status;
+}
+
+// 세션 필터링
+document.getElementById('session-status-filter')?.addEventListener('change', filterSessions);
+document.getElementById('session-type-filter')?.addEventListener('change', filterSessions);
+
+async function filterSessions() {
+  const statusFilter = document.getElementById('session-status-filter').value;
+  const typeFilter = document.getElementById('session-type-filter').value;
+  
+  try {
+    const allSessions = await window.api.invoke('get-counseling-sessions');
+    let filtered = allSessions;
+    
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(s => s.status === statusFilter);
+    }
+    
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(s => s.session_type === typeFilter);
+    }
+    
+    const tbody = document.getElementById('sessions-table-body');
+    
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="empty-state-icon">🔍</div><h3>검색 결과가 없습니다</h3></td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = filtered.map(session => `
+      <tr>
+        <td>
+          <div>
+            <strong>${session.worker_name || '-'}</strong>
+            <div style="font-size: 0.85rem; color: #8e9aaf;">${session.worker_role || ''}</div>
+          </div>
+        </td>
+        <td>
+          <div>
+            <strong>${session.counselor_name || '-'}</strong>
+            <div style="font-size: 0.85rem; color: #8e9aaf;">${session.counselor_license || ''}</div>
+          </div>
+        </td>
+        <td>${session.session_date ? new Date(session.session_date).toLocaleString('ko-KR') : '-'}</td>
+        <td>
+          <span class="session-type ${session.session_type}">
+            ${session.session_type === 'auto' ? '🔗 자동 연계' : '📝 수동 생성'}
+          </span>
+        </td>
+        <td>
+          <span class="priority-badge ${session.priority}">
+            ${session.priority === 'urgent' ? '🚨 긴급' : session.priority === 'high' ? '⚠️ 높음' : '✅ 보통'}
+          </span>
+        </td>
+        <td>
+          <span class="session-status ${session.status}">
+            ${getSessionStatusText(session.status)}
+          </span>
+        </td>
+        <td>
+          ${session.status === 'scheduled' ? 
+            `<button class="btn btn-sm btn-success" onclick="startSession(${session.id})">시작</button>
+             <button class="btn btn-sm btn-danger" onclick="cancelSession(${session.id})">취소</button>` :
+            session.status === 'in_progress' ?
+            `<button class="btn btn-sm btn-primary" onclick="completeSession(${session.id})">완료</button>` :
+            `<button class="btn btn-sm btn-secondary" onclick="viewSessionDetails(${session.id})">상세</button>`
+          }
+        </td>
+      </tr>
+    `).join('');
+  } catch (error) {
+    console.error('세션 필터링 실패:', error);
+  }
+}
+
+// 초기화 시 탭 설정
+document.addEventListener('DOMContentLoaded', () => {
+  setupCounselingTabs();
+});

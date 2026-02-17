@@ -48,6 +48,11 @@
           <span class="icon">📝</span>
           <span class="label">리포트</span>
         </li>
+        <li class="nav-item" data-view="counseling">
+          <span class="icon">🧠</span>
+          <span class="label">심리상담 연계</span>
+          <span class="badge" id="counseling-badge">0</span>
+        </li>
       </ul>
     </nav>
 
@@ -88,6 +93,13 @@
             <div class="stat-content">
               <div class="stat-value" id="danger-workers">-</div>
               <div class="stat-label">위험 상태</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🧠</div>
+            <div class="stat-content">
+              <div class="stat-value" id="dashboard-scheduled-sessions">-</div>
+              <div class="stat-label">예정 상담</div>
             </div>
           </div>
         </div>
@@ -255,6 +267,116 @@
         </div>
       </div>
 
+      <!-- 심리상담 연계 뷰 -->
+      <div id="counseling-view" class="view">
+        <div class="view-header">
+          <div class="view-header-left">
+            <h1>🧠 심리상담 자동 연계</h1>
+            <p class="view-subtitle">고위험군 자동 감지 및 전문 상담 연계</p>
+          </div>
+          <div class="view-header-right">
+            <button class="btn btn-primary" id="add-counselor-btn">
+              ➕ 상담사 추가
+            </button>
+          </div>
+        </div>
+
+        <!-- 상담 연계 통계 카드 -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-content">
+              <div class="stat-value" id="scheduled-sessions">-</div>
+              <div class="stat-label">예정된 상담</div>
+            </div>
+          </div>
+          <div class="stat-card positive">
+            <div class="stat-icon">👨‍⚕️</div>
+            <div class="stat-content">
+              <div class="stat-value" id="active-counselors">-</div>
+              <div class="stat-label">활동 상담사</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+              <div class="stat-value" id="completed-sessions">-</div>
+              <div class="stat-label">완료된 상담</div>
+            </div>
+          </div>
+          <div class="stat-card warning">
+            <div class="stat-icon">🔗</div>
+            <div class="stat-content">
+              <div class="stat-value" id="auto-linked">-</div>
+              <div class="stat-label">자동 연계 건수</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 탭 메뉴 -->
+        <div class="tab-menu">
+          <button class="tab-btn active" data-tab="sessions">상담 세션</button>
+          <button class="tab-btn" data-tab="counselors">상담사 관리</button>
+          <button class="tab-btn" data-tab="history">상담 이력</button>
+        </div>
+
+        <!-- 상담 세션 탭 -->
+        <div id="sessions-tab" class="tab-content active">
+          <div class="toolbar">
+            <div class="filter-group">
+              <select id="session-status-filter">
+                <option value="all">전체 상태</option>
+                <option value="scheduled">예정됨</option>
+                <option value="in_progress">진행중</option>
+                <option value="completed">완료됨</option>
+                <option value="cancelled">취소됨</option>
+              </select>
+              <select id="session-type-filter">
+                <option value="all">전체 유형</option>
+                <option value="auto">자동 연계</option>
+                <option value="manual">수동 생성</option>
+              </select>
+            </div>
+          </div>
+          <div class="section-card">
+            <div class="table-container">
+              <table class="sessions-table">
+                <thead>
+                  <tr>
+                    <th>케어 인력</th>
+                    <th>상담사</th>
+                    <th>상담 일정</th>
+                    <th>유형</th>
+                    <th>우선순위</th>
+                    <th>상태</th>
+                    <th>작업</th>
+                  </tr>
+                </thead>
+                <tbody id="sessions-table-body">
+                  <!-- 동적 생성 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 상담사 관리 탭 -->
+        <div id="counselors-tab" class="tab-content">
+          <div class="counselors-grid" id="counselors-grid">
+            <!-- 동적 생성 -->
+          </div>
+        </div>
+
+        <!-- 상담 이력 탭 -->
+        <div id="history-tab" class="tab-content">
+          <div class="section-card">
+            <div id="history-timeline">
+              <!-- 동적 생성 -->
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 리포트 뷰 -->
       <div id="reports-view" class="view">
         <div class="view-header">
@@ -384,6 +506,53 @@
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" onclick="closeResolveModal()">취소</button>
             <button type="submit" class="btn btn-primary">해결 완료</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 상담사 추가/수정 모달 -->
+  <div id="counselor-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="counselor-modal-title">상담사 추가</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="counselor-form">
+          <input type="hidden" id="counselor-id">
+          <div class="form-group">
+            <label for="counselor-name">이름 *</label>
+            <input type="text" id="counselor-name" required>
+          </div>
+          <div class="form-group">
+            <label for="counselor-license">자격증 *</label>
+            <input type="text" id="counselor-license" placeholder="예: 임상심리사 1급" required>
+          </div>
+          <div class="form-group">
+            <label for="counselor-specialties">전문 분야 *</label>
+            <input type="text" id="counselor-specialties" placeholder="예: 번아웃, 스트레스, 우울" required>
+          </div>
+          <div class="form-group">
+            <label for="counselor-phone">연락처 *</label>
+            <input type="tel" id="counselor-phone" placeholder="010-0000-0000" required>
+          </div>
+          <div class="form-group">
+            <label for="counselor-email">이메일 *</label>
+            <input type="email" id="counselor-email" placeholder="counselor@goyo.kr" required>
+          </div>
+          <div class="form-group">
+            <label for="counselor-availability">가용성 상태 *</label>
+            <select id="counselor-availability" required>
+              <option value="available">가능</option>
+              <option value="busy">바쁨</option>
+              <option value="unavailable">불가능</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeCounselorModal()">취소</button>
+            <button type="submit" class="btn btn-primary">저장</button>
           </div>
         </form>
       </div>

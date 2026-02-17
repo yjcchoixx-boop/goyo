@@ -1178,3 +1178,373 @@ body {
   font-size: 14px;
   opacity: 0.7;
 }
+
+/* 심리상담 연계 스타일 */
+.tab-menu {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.tab-btn {
+  padding: 1rem 2rem;
+  background: none;
+  border: none;
+  color: #8e9aaf;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.tab-btn:hover {
+  color: #667eea;
+}
+
+.tab-btn.active {
+  color: #667eea;
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+/* 상담사 그리드 */
+.counselors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.counselor-card {
+  background: #1a1f2e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.counselor-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+.counselor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.counselor-info h4 {
+  font-size: 1.2rem;
+  margin-bottom: 0.25rem;
+  color: #ffffff;
+}
+
+.counselor-info p {
+  font-size: 0.9rem;
+  color: #8e9aaf;
+}
+
+.counselor-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.counselor-status.available {
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+}
+
+.counselor-status.busy {
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+}
+
+.counselor-status.unavailable {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.counselor-specialties {
+  margin-bottom: 1rem;
+}
+
+.counselor-specialties h5 {
+  font-size: 0.9rem;
+  color: #8e9aaf;
+  margin-bottom: 0.5rem;
+}
+
+.specialty-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.specialty-tag {
+  padding: 0.25rem 0.75rem;
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #667eea;
+}
+
+.counselor-stats {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.counselor-stat {
+  text-align: center;
+}
+
+.counselor-stat-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #667eea;
+  margin-bottom: 0.25rem;
+}
+
+.counselor-stat-label {
+  font-size: 0.85rem;
+  color: #8e9aaf;
+}
+
+.counselor-load-bar {
+  margin-top: 1rem;
+}
+
+.counselor-load-bar label {
+  font-size: 0.85rem;
+  color: #8e9aaf;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.load-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.load-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4ade80 0%, #fbbf24 70%, #ef4444 100%);
+  transition: width 0.3s ease;
+}
+
+/* 상담 세션 테이블 */
+.sessions-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sessions-table thead {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sessions-table th,
+.sessions-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sessions-table th {
+  color: #8e9aaf;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.sessions-table td {
+  color: #ffffff;
+}
+
+.session-type {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.session-type.auto {
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+.session-type.manual {
+  background: rgba(142, 154, 175, 0.1);
+  color: #8e9aaf;
+  border: 1px solid rgba(142, 154, 175, 0.3);
+}
+
+.priority-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.priority-badge.urgent {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  animation: pulse 2s infinite;
+}
+
+.priority-badge.high {
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+}
+
+.priority-badge.normal {
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+}
+
+.session-status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.session-status.scheduled {
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+}
+
+.session-status.in_progress {
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+}
+
+.session-status.completed {
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+}
+
+.session-status.cancelled {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* 상담 이력 타임라인 */
+.history-timeline {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.history-timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, #667eea 0%, rgba(102, 126, 234, 0.1) 100%);
+}
+
+.history-item {
+  position: relative;
+  padding-bottom: 2rem;
+  padding-left: 2rem;
+}
+
+.history-item::before {
+  content: '';
+  position: absolute;
+  left: -2rem;
+  top: 0.5rem;
+  width: 12px;
+  height: 12px;
+  background: #667eea;
+  border-radius: 50%;
+  border: 2px solid #0f1419;
+}
+
+.history-item-date {
+  font-size: 0.85rem;
+  color: #8e9aaf;
+  margin-bottom: 0.5rem;
+}
+
+.history-item-content {
+  background: #1a1f2e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.history-item-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.history-item-text {
+  font-size: 0.9rem;
+  color: #8e9aaf;
+  line-height: 1.6;
+}
+
+.history-item-footer {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.85rem;
+  color: #8e9aaf;
+}
+
+/* 빈 상태 메시지 */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #8e9aaf;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+  font-size: 1.2rem;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
