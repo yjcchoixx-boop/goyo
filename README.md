@@ -319,3 +319,159 @@ GOYO Team
 **"GOYO는 오늘의 솔루션이 아니라 미래 케어 조직의 Emotional Operations Layer입니다."** 🚀
 
 **시연회 대성공을 기원합니다!** 💪🎉
+
+## v3.0.0 - 심리상담 자동 연계 시스템 (2026-02-17)
+
+### 🆕 새로운 기능
+
+#### 🧠 심리상담 자동 연계 시스템
+고위험군 케어 인력을 자동으로 감지하고 전문 상담사와 연계하는 완전한 시스템입니다.
+
+**주요 기능:**
+- **자동 연계**: 위험도 높은 인력을 감지하면 자동으로 가용한 상담사와 매칭
+- **실시간 모니터링**: 대시보드에서 예정된 상담 건수 실시간 확인
+- **상담사 관리**: 상담사 추가, 수정, 가동률 모니터링
+- **세션 관리**: 상담 세션 시작, 진행, 완료, 취소 관리
+- **이력 추적**: 완료된 상담의 결과 및 후속 조치 기록
+
+**통계 카드:**
+1. 📅 **예정된 상담** - 예약된 상담 세션 수
+2. 👨‍⚕️ **활동 상담사** - 현재 활동 중인 상담사 수
+3. ✅ **완료된 상담** - 완료된 상담 총 건수
+4. 🔗 **자동 연계 건수** - 시스템이 자동으로 연계한 건수
+
+**3개 탭:**
+
+**1. 상담 세션 탭**
+- 모든 상담 세션 목록 (테이블 형식)
+- 필터링: 상태별 (예정됨/진행중/완료됨/취소됨), 유형별 (자동/수동)
+- 자동 연계 세션에 특별 배지 표시
+- 우선순위 표시: 🚨 긴급, ⚠️ 높음, ✅ 보통
+- 액션 버튼: 시작, 완료, 취소
+
+**2. 상담사 관리 탭**
+- 상담사 카드 그리드 뷰
+- 각 카드에 표시:
+  - 이름, 자격증
+  - 전문 분야 태그 (번아웃, 스트레스, 우울 등)
+  - 가용성 상태 (가능/바쁨/불가능)
+  - 진행중 세션 수 / 최대 용량
+  - 총 상담 건수
+  - 가동률 프로그레스바
+- 상담사 추가/수정 모달
+
+**3. 상담 이력 탭**
+- 타임라인 형식 이력
+- 각 이력 항목:
+  - 상담 일시
+  - 케어 인력 ↔ 상담사
+  - 상담 결과
+  - 메모
+  - 후속 상담 일정
+
+**데이터베이스 스키마:**
+
+```sql
+-- 상담사 테이블
+counselors (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  license TEXT,
+  specialties TEXT,
+  phone TEXT,
+  email TEXT,
+  availability TEXT DEFAULT 'available',
+  current_load INTEGER DEFAULT 0,
+  max_capacity INTEGER DEFAULT 5,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)
+
+-- 상담 세션 테이블
+counseling_sessions (
+  id INTEGER PRIMARY KEY,
+  worker_id INTEGER,
+  counselor_id INTEGER,
+  session_date DATETIME,
+  session_type TEXT DEFAULT 'manual',
+  priority TEXT DEFAULT 'normal',
+  status TEXT DEFAULT 'scheduled',
+  notes TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (worker_id) REFERENCES care_workers(id),
+  FOREIGN KEY (counselor_id) REFERENCES counselors(id)
+)
+
+-- 상담 이력 테이블
+counseling_history (
+  id INTEGER PRIMARY KEY,
+  session_id INTEGER,
+  outcome TEXT,
+  notes TEXT,
+  follow_up_date DATE,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (session_id) REFERENCES counseling_sessions(id)
+)
+```
+
+**API 엔드포인트 (추가):**
+1. `get-counseling-stats` - 상담 통계 조회
+2. `get-counseling-sessions` - 상담 세션 목록
+3. `get-counselors` - 상담사 목록
+4. `add-counselor` - 상담사 추가
+5. `update-counselor` - 상담사 수정
+6. `create-counseling-session` - 상담 세션 생성
+7. `auto-link-counseling` - 자동 연계 (위험 인력용)
+8. `update-session-status` - 세션 상태 업데이트
+9. `get-counseling-history` - 상담 이력 조회
+10. `add-counseling-history` - 상담 이력 추가
+
+**샘플 데이터:**
+- **5명의 상담사**:
+  1. 박지은 - 임상심리사 1급 (번아웃, 스트레스, 우울)
+  2. 김민수 - 상담심리사 1급 (직무 스트레스, 대인 관계)
+  3. 이수진 - 임상심리사 2급 (정서 조절, 자존감)
+  4. 최현우 - 정신건강임상심리사 (트라우마, PTSD)
+  5. 정은혜 - 상담심리사 2급 (우울, 불안)
+
+- **3개의 샘플 세션**:
+  1. 김미영 ↔ 박지은 (자동 연계, 긴급)
+  2. 최민준 ↔ 김민수 (자동 연계, 높음)
+  3. 한민수 ↔ 이수진 (수동 생성, 보통)
+
+**자동 연계 알고리즘:**
+1. 위험 상태 케어 인력 감지
+2. 가용 상담사 검색 (availability='available', current_load < max_capacity)
+3. 가장 적은 가동률의 상담사 선택
+4. 24시간 이내 세션 자동 생성
+5. 우선순위: 위험 → 긴급, 주의 → 높음
+6. 상담사 가동률 자동 업데이트
+
+### 🎯 시연 포인트 (업데이트)
+
+기존 5가지 포인트에 추가:
+
+6. **🧠 심리상담 자동 연계**
+   - "위험군 감지 시 즉시 전문 상담사 연계"
+   - "상담사 가동률 실시간 모니터링"
+   - "자동/수동 상담 통합 관리"
+
+### 📊 프로젝트 통계 (업데이트)
+
+- **총 코드 라인**: 4,500+ 줄
+- **API 엔드포인트**: 28개 (18개 → 28개)
+- **데이터베이스 테이블**: 8개 (5개 → 8개)
+- **주요 뷰**: 6개 (5개 → 6개)
+- **모달**: 4개 (3개 → 4개)
+- **차트**: 6개
+- **샘플 데이터**: 케어 인력 8명, 감정 로그 240개, 알림 3건, 상담사 5명, 상담 세션 3건
+
+### 🔄 완전한 워크플로우
+
+1. **감정 모니터링** → 케어 인력의 부정 감정 증가 감지
+2. **조기 경보** → 위험도 72% 이상 시 알림 발생
+3. **자동 연계** → 시스템이 자동으로 가용 상담사와 매칭
+4. **상담 진행** → 상담사가 세션 시작 및 진행
+5. **결과 기록** → 상담 완료 후 결과 및 후속 조치 기록
+6. **지속 모니터링** → 개입 효과 추적 및 재평가
+
+이제 GOYO는 **감지 → 경보 → 연계 → 개입 → 추적**의 완전한 케어 사이클을 제공합니다! 🎉
