@@ -1872,3 +1872,334 @@ function formatDateTime(dateString) {
     minute: '2-digit'
   });
 }
+
+// ============================================
+// 모바일 체크인 시스템
+// ============================================
+
+function setupMobileCheckin() {
+  const mobileSubmit = document.getElementById('mobile-submit');
+  
+  if (mobileSubmit) {
+    mobileSubmit.addEventListener('click', handleMobileCheckin);
+  }
+  
+  // 모바일 감정 버튼 클릭 효과
+  const emotionBtns = document.querySelectorAll('.mobile-emotion-btn');
+  emotionBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      emotionBtns.forEach(b => b.classList.remove('selected'));
+      this.classList.add('selected');
+    });
+  });
+}
+
+async function handleMobileCheckin() {
+  const selectedEmotion = document.querySelector('input[name="mobile-emotion"]:checked');
+  
+  if (!selectedEmotion) {
+    showNotification('감정을 선택해주세요', 'warning');
+    return;
+  }
+  
+  const emotionValue = selectedEmotion.value;
+  const emotionLabel = selectedEmotion.parentElement.dataset.emotion;
+  
+  // 감정에 따른 강도 자동 설정
+  const intensityMap = {
+    '긍정적': 9,
+    '만족': 7,
+    '중립적': 5,
+    '피로': 4,
+    '부정적': 2
+  };
+  
+  try {
+    // 현재 활성 워커 중 첫 번째 선택 (데모용)
+    const workers = await window.api.invoke('get-workers');
+    const activeWorkers = workers.filter(w => w.status === 'active');
+    
+    if (activeWorkers.length === 0) {
+      showNotification('활성 인력이 없습니다', 'warning');
+      return;
+    }
+    
+    // 랜덤 워커 선택 (실제로는 로그인한 사용자)
+    const randomWorker = activeWorkers[Math.floor(Math.random() * activeWorkers.length)];
+    
+    const logData = {
+      workerId: randomWorker.id,
+      emotionType: emotionValue,
+      intensity: intensityMap[emotionValue] || 5,
+      notes: `모바일 체크인 - ${emotionLabel}`,
+      timestamp: new Date().toISOString()
+    };
+    
+    await window.api.invoke('add-emotion-log', logData);
+    
+    // 성공 애니메이션
+    const mobileScreen = document.querySelector('.mobile-screen');
+    if (mobileScreen) {
+      mobileScreen.style.transform = 'scale(0.95)';
+      setTimeout(() => {
+        mobileScreen.style.transform = 'scale(1)';
+      }, 200);
+    }
+    
+    showNotification(`✅ ${randomWorker.name}님의 체크인이 완료되었습니다!`, 'success');
+    
+    // 체크인 후 선택 해제
+    document.querySelectorAll('input[name="mobile-emotion"]').forEach(input => {
+      input.checked = false;
+    });
+    document.querySelectorAll('.mobile-emotion-btn').forEach(btn => {
+      btn.classList.remove('selected');
+    });
+    
+  } catch (error) {
+    console.error('모바일 체크인 실패:', error);
+    showNotification('체크인 실패: ' + error.message, 'error');
+  }
+}
+
+// ============================================
+// 웨어러블 디바이스 시뮬레이션
+// ============================================
+
+let simulationRunning = false;
+let simulationInterval = null;
+let simulationData = {
+  totalCount: 0,
+  activeDevices: 0,
+  heartRates: [],
+  stressLevels: []
+};
+
+function setupAutoCollection() {
+  const startBtn = document.getElementById('start-simulation');
+  
+  if (startBtn) {
+    startBtn.addEventListener('click', toggleSimulation);
+  }
+}
+
+function toggleSimulation() {
+  if (simulationRunning) {
+    stopSimulation();
+  } else {
+    startSimulation();
+  }
+}
+
+async function startSimulation() {
+  simulationRunning = true;
+  const startBtn = document.getElementById('start-simulation');
+  startBtn.textContent = '⏸️ 시뮬레이션 중지';
+  startBtn.style.backgroundColor = '#e63946';
+  
+  // 활성 워커 로드
+  const workers = await window.api.invoke('get-workers');
+  const activeWorkers = workers.filter(w => w.status === 'active');
+  
+  if (activeWorkers.length === 0) {
+    showNotification('활성 인력이 없습니다', 'warning');
+    stopSimulation();
+    return;
+  }
+  
+  simulationData.activeDevices = Math.min(activeWorkers.length, 5); // 최대 5개 디바이스
+  updateSimulationStats();
+  
+  // 센서 모니터 생성
+  createSensorMonitors(simulationData.activeDevices, activeWorkers);
+  
+  // 10초마다 데이터 생성
+  simulationInterval = setInterval(() => {
+    generateSensorData(activeWorkers);
+  }, 10000); // 10초
+  
+  // 첫 데이터 즉시 생성
+  generateSensorData(activeWorkers);
+  
+  showNotification('시뮬레이션이 시작되었습니다', 'success');
+}
+
+function stopSimulation() {
+  simulationRunning = false;
+  const startBtn = document.getElementById('start-simulation');
+  startBtn.textContent = '▶️ 시뮬레이션 시작';
+  startBtn.style.backgroundColor = '#457b9d';
+  
+  if (simulationInterval) {
+    clearInterval(simulationInterval);
+    simulationInterval = null;
+  }
+  
+  showNotification('시뮬레이션이 중지되었습니다', 'info');
+}
+
+function createSensorMonitors(count, workers) {
+  const container = document.getElementById('sensor-monitor-container');
+  if (!container) return;
+  
+  container.innerHTML = workers.slice(0, count).map((worker, index) => `
+    <div class="sensor-card" id="sensor-${index}">
+      <div class="sensor-header">
+        <strong>${worker.name}</strong>
+        <span class="sensor-status active">🟢 활성</span>
+      </div>
+      <div class="sensor-data">
+        <div class="sensor-item">
+          <span class="sensor-label">💓 심박수</span>
+          <span class="sensor-value" id="hr-${index}">--</span>
+        </div>
+        <div class="sensor-item">
+          <span class="sensor-label">😰 스트레스</span>
+          <span class="sensor-value" id="stress-${index}">--</span>
+        </div>
+        <div class="sensor-item">
+          <span class="sensor-label">😴 수면품질</span>
+          <span class="sensor-value" id="sleep-${index}">--</span>
+        </div>
+        <div class="sensor-item">
+          <span class="sensor-label">🚶 걸음수</span>
+          <span class="sensor-value" id="steps-${index}">--</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function generateSensorData(workers) {
+  const activeDevices = simulationData.activeDevices;
+  
+  for (let i = 0; i < activeDevices; i++) {
+    const worker = workers[i];
+    
+    // 랜덤 센서 데이터 생성
+    const heartRate = 60 + Math.floor(Math.random() * 40); // 60-100 bpm
+    const stressIndex = Math.floor(Math.random() * 100); // 0-100
+    const sleepQuality = 50 + Math.floor(Math.random() * 50); // 50-100%
+    const steps = Math.floor(Math.random() * 10000); // 0-10000 걸음
+    
+    // UI 업데이트
+    updateSensorDisplay(i, heartRate, stressIndex, sleepQuality, steps);
+    
+    // 데이터 저장
+    simulationData.heartRates.push(heartRate);
+    simulationData.stressLevels.push(stressIndex);
+    simulationData.totalCount++;
+    
+    // 타임라인 추가
+    addTimelineItem(worker.name, heartRate, stressIndex);
+    
+    // 스트레스 지수가 높으면 자동으로 감정 로그 생성
+    if (stressIndex >= 70) {
+      try {
+        const emotionType = stressIndex >= 85 ? '부정적' : '스트레스';
+        const intensity = Math.ceil(stressIndex / 10);
+        
+        await window.api.invoke('add-emotion-log', {
+          workerId: worker.id,
+          emotionType: emotionType,
+          intensity: intensity,
+          notes: `자동 수집 - 높은 스트레스 지수 감지 (${stressIndex})`,
+          timestamp: new Date().toISOString()
+        });
+        
+        addTimelineItem(worker.name, heartRate, stressIndex, true); // 경고 표시
+      } catch (error) {
+        console.error('자동 로그 생성 실패:', error);
+      }
+    }
+  }
+  
+  updateSimulationStats();
+}
+
+function updateSensorDisplay(index, heartRate, stressIndex, sleepQuality, steps) {
+  const hrEl = document.getElementById(`hr-${index}`);
+  const stressEl = document.getElementById(`stress-${index}`);
+  const sleepEl = document.getElementById(`sleep-${index}`);
+  const stepsEl = document.getElementById(`steps-${index}`);
+  
+  if (hrEl) hrEl.textContent = `${heartRate} bpm`;
+  if (stressEl) {
+    stressEl.textContent = `${stressIndex}/100`;
+    // 스트레스 수준에 따른 색상
+    stressEl.style.color = stressIndex >= 70 ? '#e63946' : stressIndex >= 50 ? '#f77f00' : '#06d6a0';
+  }
+  if (sleepEl) sleepEl.textContent = `${sleepQuality}%`;
+  if (stepsEl) stepsEl.textContent = steps.toLocaleString();
+}
+
+function updateSimulationStats() {
+  const totalEl = document.getElementById('sim-total-count');
+  const devicesEl = document.getElementById('sim-active-devices');
+  const avgHrEl = document.getElementById('sim-avg-heartrate');
+  const avgStressEl = document.getElementById('sim-avg-stress');
+  
+  if (totalEl) totalEl.textContent = simulationData.totalCount;
+  if (devicesEl) devicesEl.textContent = simulationData.activeDevices;
+  
+  if (avgHrEl && simulationData.heartRates.length > 0) {
+    const avgHr = Math.round(
+      simulationData.heartRates.reduce((a, b) => a + b, 0) / simulationData.heartRates.length
+    );
+    avgHrEl.textContent = `${avgHr} bpm`;
+  }
+  
+  if (avgStressEl && simulationData.stressLevels.length > 0) {
+    const avgStress = Math.round(
+      simulationData.stressLevels.reduce((a, b) => a + b, 0) / simulationData.stressLevels.length
+    );
+    avgStressEl.textContent = `${avgStress}/100`;
+  }
+}
+
+function addTimelineItem(workerName, heartRate, stressIndex, isWarning = false) {
+  const timeline = document.getElementById('simulation-timeline');
+  if (!timeline) return;
+  
+  // Empty 메시지 제거
+  const emptyMsg = timeline.querySelector('.timeline-empty');
+  if (emptyMsg) emptyMsg.remove();
+  
+  const timeStr = new Date().toLocaleTimeString('ko-KR');
+  const warningClass = isWarning ? 'warning' : '';
+  const warningIcon = isWarning ? '⚠️ ' : '';
+  
+  const item = document.createElement('div');
+  item.className = `timeline-item ${warningClass}`;
+  item.innerHTML = `
+    <div class="timeline-time">${timeStr}</div>
+    <div class="timeline-content">
+      <strong>${warningIcon}${workerName}</strong>
+      <div class="timeline-data">
+        💓 ${heartRate} bpm | 😰 스트레스 ${stressIndex}/100
+        ${isWarning ? '<span style="color: #e63946;">→ 자동 감정 로그 생성</span>' : ''}
+      </div>
+    </div>
+  `;
+  
+  // 최신 항목을 위에 추가
+  timeline.insertBefore(item, timeline.firstChild);
+  
+  // 최대 20개 항목만 유지
+  while (timeline.children.length > 20) {
+    timeline.removeChild(timeline.lastChild);
+  }
+}
+
+// ============================================
+// 초기화
+// ============================================
+
+// 데이터 수집 뷰 로드 시 모바일과 자동수집 초기화 추가
+const originalLoadDataCollectionView = loadDataCollectionView;
+loadDataCollectionView = async function() {
+  await originalLoadDataCollectionView();
+  setupMobileCheckin();
+  setupAutoCollection();
+};
+
