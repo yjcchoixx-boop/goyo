@@ -42,7 +42,11 @@
         </li>
         <li class="nav-item" data-view="analytics">
           <span class="icon">📈</span>
-          <span class="label">분석 리포트</span>
+          <span class="label">데이터 분석</span>
+        </li>
+        <li class="nav-item" data-view="reports">
+          <span class="icon">📝</span>
+          <span class="label">리포트</span>
         </li>
       </ul>
     </nav>
@@ -52,7 +56,7 @@
       <!-- 대시보드 뷰 -->
       <div id="dashboard-view" class="view active">
         <div class="view-header">
-          <h1>감정 모니터링 대시보드</h1>
+          <h1>📊 실시간 감정 모니터링 대시보드</h1>
           <p class="view-subtitle">실시간 케어 인력 감정 상태 및 운영 인사이트</p>
         </div>
 
@@ -62,28 +66,28 @@
             <div class="stat-icon">👥</div>
             <div class="stat-content">
               <div class="stat-value" id="total-workers">-</div>
-              <div class="stat-label">활성 케어 인력</div>
-            </div>
-          </div>
-          <div class="stat-card alert">
-            <div class="stat-icon">⚠️</div>
-            <div class="stat-content">
-              <div class="stat-value" id="high-risk-count">-</div>
-              <div class="stat-label">고위험 알림</div>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">📊</div>
-            <div class="stat-content">
-              <div class="stat-value" id="avg-emotion-score">-</div>
-              <div class="stat-label">평균 감정 점수</div>
+              <div class="stat-label">전체 인력</div>
             </div>
           </div>
           <div class="stat-card positive">
             <div class="stat-icon">✅</div>
             <div class="stat-content">
-              <div class="stat-value" id="positive-trend">-</div>
-              <div class="stat-label">긍정적 트렌드</div>
+              <div class="stat-value" id="normal-workers">-</div>
+              <div class="stat-label">안정 상태</div>
+            </div>
+          </div>
+          <div class="stat-card warning">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-content">
+              <div class="stat-value" id="warning-workers">-</div>
+              <div class="stat-label">주의 필요</div>
+            </div>
+          </div>
+          <div class="stat-card alert">
+            <div class="stat-icon">🚨</div>
+            <div class="stat-content">
+              <div class="stat-value" id="danger-workers">-</div>
+              <div class="stat-label">위험 상태</div>
             </div>
           </div>
         </div>
@@ -91,27 +95,73 @@
         <!-- 차트 영역 -->
         <div class="charts-grid">
           <div class="chart-card">
-            <h3>팀별 감정 분포</h3>
+            <h3>감정 상태 분포</h3>
             <canvas id="emotion-distribution-chart"></canvas>
           </div>
           <div class="chart-card">
-            <h3>최근 7일 감정 트렌드</h3>
-            <canvas id="emotion-trend-chart"></canvas>
+            <h3>번아웃 위험도 추이</h3>
+            <canvas id="burnout-trend-chart"></canvas>
           </div>
         </div>
 
-        <!-- 케어 인력 목록 -->
+        <!-- 실시간 알림 패널 -->
         <div class="section-card">
-          <h3>케어 인력 현황</h3>
-          <div id="workers-list" class="workers-grid"></div>
+          <h3>🔔 실시간 알림</h3>
+          <div id="realtime-alerts"></div>
+        </div>
+
+        <!-- 인력 상태 현황 -->
+        <div class="section-card">
+          <h3>👥 인력 상태 현황</h3>
+          <div id="workers-status-list"></div>
         </div>
       </div>
 
       <!-- 리스크 알림 뷰 -->
       <div id="alerts-view" class="view">
         <div class="view-header">
-          <h1>🔔 번아웃 리스크 알림</h1>
-          <p class="view-subtitle">실시간 리스크 감지 및 개입 방안</p>
+          <h1>🔔 조기 경보 시스템</h1>
+          <p class="view-subtitle">번아웃 리스크 감지 및 개입 방안</p>
+        </div>
+
+        <!-- 알림 통계 -->
+        <div class="stats-grid">
+          <div class="stat-card alert">
+            <div class="stat-icon">🚨</div>
+            <div class="stat-content">
+              <div class="stat-value" id="critical-alerts">-</div>
+              <div class="stat-label">긴급 (위험)</div>
+            </div>
+          </div>
+          <div class="stat-card warning">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-content">
+              <div class="stat-value" id="high-alerts">-</div>
+              <div class="stat-label">높음 (주의)</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-content">
+              <div class="stat-value" id="medium-alerts">-</div>
+              <div class="stat-label">보통 (관찰)</div>
+            </div>
+          </div>
+          <div class="stat-card positive">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+              <div class="stat-value" id="resolved-alerts">-</div>
+              <div class="stat-label">해결 완료</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 알림 필터 -->
+        <div class="filter-bar">
+          <button class="filter-btn active" data-filter="all">전체</button>
+          <button class="filter-btn" data-filter="pending">활성</button>
+          <button class="filter-btn" data-filter="acknowledged">확인됨</button>
+          <button class="filter-btn" data-filter="resolved">해결됨</button>
         </div>
 
         <div id="alerts-container"></div>
@@ -120,70 +170,130 @@
       <!-- 케어 인력 뷰 -->
       <div id="workers-view" class="view">
         <div class="view-header">
-          <h1>👥 케어 인력 관리</h1>
-          <p class="view-subtitle">개인별 감정 이력 및 상태 추적</p>
+          <div class="view-header-left">
+            <h1>👥 케어 인력 관리</h1>
+            <p class="view-subtitle">인력 추가, 수정, 삭제 및 상태 관리</p>
+          </div>
+          <div class="view-header-right">
+            <button class="btn btn-primary" id="add-worker-btn">
+              ➕ 인력 추가
+            </button>
+          </div>
         </div>
 
-        <div id="workers-detail-container"></div>
+        <!-- 검색 및 필터 -->
+        <div class="toolbar">
+          <div class="search-box">
+            <input type="text" id="worker-search" placeholder="🔍 이름, 역할, 부서 검색...">
+          </div>
+          <div class="filter-group">
+            <select id="team-filter">
+              <option value="all">전체 부서</option>
+              <option value="A팀">A팀</option>
+              <option value="B팀">B팀</option>
+              <option value="C팀">C팀</option>
+            </select>
+            <select id="risk-filter">
+              <option value="all">전체 상태</option>
+              <option value="normal">안정</option>
+              <option value="warning">주의</option>
+              <option value="danger">위험</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 인력 테이블 -->
+        <div class="section-card">
+          <div class="table-container">
+            <table class="workers-table">
+              <thead>
+                <tr>
+                  <th>이름</th>
+                  <th>역할</th>
+                  <th>부서</th>
+                  <th>입사일</th>
+                  <th>연락처</th>
+                  <th>상태</th>
+                  <th>작업</th>
+                </tr>
+              </thead>
+              <tbody id="workers-table-body">
+                <!-- 동적 생성 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
-      <!-- 분석 리포트 뷰 -->
+      <!-- 데이터 분석 뷰 -->
       <div id="analytics-view" class="view">
         <div class="view-header">
-          <h1>📈 운영 인사이트 리포트</h1>
-          <p class="view-subtitle">감정 데이터 기반 운영 의사결정 지원</p>
+          <h1>📈 데이터 분석</h1>
+          <p class="view-subtitle">부서별 감정 상태 및 번아웃 추이 분석</p>
         </div>
 
-        <div class="analytics-content">
-          <div class="insight-card">
-            <h3>🎯 핵심 인사이트</h3>
-            <div class="insight-item">
-              <div class="insight-title">감정 운영의 새로운 관점</div>
-              <p>"감정을 측정할 수 있다면, 관리할 수 있습니다. 관리할 수 있다면, 개선할 수 있습니다."</p>
-            </div>
-            <div class="insight-item">
-              <div class="insight-title">조기 감지의 중요성</div>
-              <p>번아웃은 갑자기 오는 것이 아니라 누적되는 것입니다. GOYO는 위기가 되기 전에 감지합니다.</p>
-            </div>
-            <div class="insight-item">
-              <div class="insight-title">데이터 기반 의사결정</div>
-              <p>감정 상태는 서비스 품질과 직결됩니다. 운영 데이터로서 감정을 관리하세요.</p>
-            </div>
+        <div class="charts-grid">
+          <div class="chart-card large">
+            <h3>부서별 감정 상태 비교</h3>
+            <canvas id="team-emotion-chart"></canvas>
           </div>
+          <div class="chart-card large">
+            <h3>월별 번아웃 추이</h3>
+            <canvas id="monthly-burnout-chart"></canvas>
+          </div>
+        </div>
 
-          <div class="framework-card">
-            <h3>🔄 Emotional Operations Framework</h3>
-            <div class="framework-steps">
-              <div class="framework-step">
-                <div class="step-number">01</div>
-                <div class="step-content">
-                  <h4>심리상담 원리 적용</h4>
-                  <p>검증된 상담 프레임워크를 운영 환경에 맞게 변환</p>
-                </div>
-              </div>
-              <div class="framework-step">
-                <div class="step-number">02</div>
-                <div class="step-content">
-                  <h4>감정 데이터 수집 및 분석</h4>
-                  <p>상호작용 데이터에서 감정 신호를 태깅하고 패턴 분석</p>
-                </div>
-              </div>
-              <div class="framework-step">
-                <div class="step-number">03</div>
-                <div class="step-content">
-                  <h4>리스크 조기 감지</h4>
-                  <p>번아웃 징후를 사전에 포착하여 운영팀에 알림</p>
-                </div>
-              </div>
-              <div class="framework-step">
-                <div class="step-number">04</div>
-                <div class="step-content">
-                  <h4>개입 방안 제안</h4>
-                  <p>상황에 맞는 구체적인 행동 가이드 제공</p>
-                </div>
-              </div>
-            </div>
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>감정 유형 분포</h3>
+            <canvas id="emotion-polar-chart"></canvas>
           </div>
+          <div class="chart-card">
+            <h3>주간 감정 변화</h3>
+            <canvas id="weekly-emotion-chart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- 리포트 뷰 -->
+      <div id="reports-view" class="view">
+        <div class="view-header">
+          <h1>📝 운영 리포트</h1>
+          <p class="view-subtitle">감정 데이터 기반 운영 리포트 생성 및 관리</p>
+        </div>
+
+        <!-- 리포트 생성 카드 -->
+        <div class="report-cards-grid">
+          <div class="report-card" data-report="weekly">
+            <div class="report-icon">📅</div>
+            <h3>주간 리포트</h3>
+            <p>최근 1주일간의 감정 데이터 및 리스크 분석</p>
+            <button class="btn btn-primary" onclick="generateReport('weekly')">생성</button>
+          </div>
+          <div class="report-card" data-report="monthly">
+            <div class="report-icon">📊</div>
+            <h3>월간 리포트</h3>
+            <p>월별 감정 트렌드 및 번아웃 통계</p>
+            <button class="btn btn-primary" onclick="generateReport('monthly')">생성</button>
+          </div>
+          <div class="report-card" data-report="quarterly">
+            <div class="report-icon">📈</div>
+            <h3>분기 리포트</h3>
+            <p>분기별 종합 분석 및 개선 제안</p>
+            <button class="btn btn-primary" onclick="generateReport('quarterly')">생성</button>
+          </div>
+          <div class="report-card" data-report="risk">
+            <div class="report-icon">⚠️</div>
+            <h3>위험 분석 리포트</h3>
+            <p>고위험군 인력 분석 및 개입 이력</p>
+            <button class="btn btn-primary" onclick="generateReport('risk')">생성</button>
+          </div>
+        </div>
+
+        <!-- 최근 리포트 목록 -->
+        <div class="section-card">
+          <h3>📋 최근 생성 리포트</h3>
+          <div id="reports-list"></div>
         </div>
       </div>
     </main>
@@ -197,7 +307,85 @@
         <button class="modal-close">&times;</button>
       </div>
       <div class="modal-body" id="intervention-content">
-        <!-- 동적으로 생성 -->
+        <!-- 동적 생성 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 인력 추가/수정 모달 -->
+  <div id="worker-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="worker-modal-title">인력 추가</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="worker-form">
+          <input type="hidden" id="worker-id">
+          <div class="form-group">
+            <label for="worker-name">이름 *</label>
+            <input type="text" id="worker-name" required>
+          </div>
+          <div class="form-group">
+            <label for="worker-role">역할 *</label>
+            <select id="worker-role" required>
+              <option value="">선택하세요</option>
+              <option value="요양보호사">요양보호사</option>
+              <option value="간호사">간호사</option>
+              <option value="사회복지사">사회복지사</option>
+              <option value="물리치료사">물리치료사</option>
+              <option value="관리자">관리자</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="worker-team">부서 *</label>
+            <select id="worker-team" required>
+              <option value="">선택하세요</option>
+              <option value="A팀">A팀</option>
+              <option value="B팀">B팀</option>
+              <option value="C팀">C팀</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="worker-hire-date">입사일 *</label>
+            <input type="date" id="worker-hire-date" required>
+          </div>
+          <div class="form-group">
+            <label for="worker-phone">연락처</label>
+            <input type="tel" id="worker-phone" placeholder="010-0000-0000">
+          </div>
+          <div class="form-group">
+            <label for="worker-email">이메일</label>
+            <input type="email" id="worker-email" placeholder="email@goyo.kr">
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeWorkerModal()">취소</button>
+            <button type="submit" class="btn btn-primary">저장</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 알림 해결 모달 -->
+  <div id="resolve-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>✅ 알림 해결</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="resolve-form">
+          <input type="hidden" id="resolve-alert-id">
+          <div class="form-group">
+            <label for="resolve-notes">해결 내용 *</label>
+            <textarea id="resolve-notes" rows="5" placeholder="어떻게 해결했는지 설명해주세요..." required></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeResolveModal()">취소</button>
+            <button type="submit" class="btn btn-primary">해결 완료</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

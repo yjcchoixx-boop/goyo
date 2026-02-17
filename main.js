@@ -36,7 +36,12 @@ function initDatabase() {
       role TEXT NOT NULL,
       team TEXT NOT NULL,
       hire_date TEXT NOT NULL,
-      status TEXT DEFAULT 'active'
+      phone TEXT,
+      email TEXT,
+      risk_status TEXT DEFAULT 'normal',
+      status TEXT DEFAULT 'active',
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);
   
@@ -61,7 +66,11 @@ function initDatabase() {
       alert_date TEXT NOT NULL,
       risk_score REAL NOT NULL,
       risk_level TEXT NOT NULL,
+      alert_type TEXT DEFAULT 'burnout',
       status TEXT DEFAULT 'pending',
+      acknowledged_at TEXT,
+      resolved_at TEXT,
+      notes TEXT,
       FOREIGN KEY (worker_id) REFERENCES care_workers(id)
     )
   `);
@@ -80,6 +89,20 @@ function initDatabase() {
     )
   `);
   
+  // 리포트 테이블
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      report_type TEXT NOT NULL,
+      report_name TEXT NOT NULL,
+      period_start TEXT NOT NULL,
+      period_end TEXT NOT NULL,
+      generated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      data TEXT,
+      summary TEXT
+    )
+  `);
+  
   // 샘플 데이터 삽입
   const workerCount = db.prepare('SELECT COUNT(*) as count FROM care_workers').get();
   if (workerCount.count === 0) {
@@ -89,16 +112,19 @@ function initDatabase() {
 
 function insertSampleData() {
   const insertWorker = db.prepare(`
-    INSERT INTO care_workers (name, role, team, hire_date) 
-    VALUES (?, ?, ?, ?)
+    INSERT INTO care_workers (name, role, team, hire_date, phone, email, risk_status) 
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
   
   const workers = [
-    ['김미영', '요양보호사', 'A팀', '2022-03-15'],
-    ['이정수', '간호사', 'A팀', '2021-08-20'],
-    ['박서연', '요양보호사', 'B팀', '2023-01-10'],
-    ['최민준', '사회복지사', 'B팀', '2020-11-05'],
-    ['정수진', '요양보호사', 'C팀', '2022-07-18']
+    ['김미영', '요양보호사', 'A팀', '2022-03-15', '010-1234-5678', 'kim@goyo.kr', 'danger'],
+    ['이정수', '간호사', 'A팀', '2021-08-20', '010-2345-6789', 'lee@goyo.kr', 'normal'],
+    ['박서연', '요양보호사', 'B팀', '2023-01-10', '010-3456-7890', 'park@goyo.kr', 'normal'],
+    ['최민준', '사회복지사', 'B팀', '2020-11-05', '010-4567-8901', 'choi@goyo.kr', 'warning'],
+    ['정수진', '요양보호사', 'C팀', '2022-07-18', '010-5678-9012', 'jung@goyo.kr', 'normal'],
+    ['강지훈', '간호사', 'C팀', '2023-06-01', '010-6789-0123', 'kang@goyo.kr', 'normal'],
+    ['윤서아', '요양보호사', 'A팀', '2023-09-15', '010-7890-1234', 'yoon@goyo.kr', 'normal'],
+    ['한민수', '사회복지사', 'B팀', '2022-12-01', '010-8901-2345', 'han@goyo.kr', 'warning']
   ];
   
   workers.forEach(worker => insertWorker.run(worker));
@@ -112,7 +138,7 @@ function insertSampleData() {
   const emotionTypes = ['긍정적', '부정적', '중립적', '피로', '스트레스', '만족'];
   const now = new Date();
   
-  for (let workerId = 1; workerId <= 5; workerId++) {
+  for (let workerId = 1; workerId <= 8; workerId++) {
     for (let i = 0; i < 30; i++) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
@@ -145,6 +171,8 @@ function insertSampleData() {
   `);
   
   insertAlert.run(1, new Date().toISOString(), 72, 'high');
+  insertAlert.run(4, new Date(Date.now() - 86400000).toISOString(), 58, 'medium');
+  insertAlert.run(8, new Date(Date.now() - 172800000).toISOString(), 45, 'medium');
 }
 
 // IPC 핸들러
@@ -199,6 +227,9 @@ ipcMain.handle('update-intervention-status', (event, interventionId, status) => 
 
 ipcMain.handle('get-dashboard-stats', () => {
   const totalWorkers = db.prepare('SELECT COUNT(*) as count FROM care_workers WHERE status = "active"').get();
+  const normalWorkers = db.prepare('SELECT COUNT(*) as count FROM care_workers WHERE status = "active" AND risk_status = "normal"').get();
+  const warningWorkers = db.prepare('SELECT COUNT(*) as count FROM care_workers WHERE status = "active" AND risk_status = "warning"').get();
+  const dangerWorkers = db.prepare('SELECT COUNT(*) as count FROM care_workers WHERE status = "active" AND risk_status = "danger"').get();
   const highRiskAlerts = db.prepare('SELECT COUNT(*) as count FROM risk_alerts WHERE risk_level = "high" AND status = "pending"').get();
   
   const recentEmotions = db.prepare(`
@@ -210,9 +241,146 @@ ipcMain.handle('get-dashboard-stats', () => {
   
   return {
     totalWorkers: totalWorkers.count,
+    normalWorkers: normalWorkers.count,
+    warningWorkers: warningWorkers.count,
+    dangerWorkers: dangerWorkers.count,
     highRiskAlerts: highRiskAlerts.count,
     recentEmotions
   };
+});
+
+// CRUD 핸들러
+ipcMain.handle('add-worker', (event, worker) => {
+  const stmt = db.prepare(`
+    INSERT INTO care_workers (name, role, team, hire_date, phone, email, risk_status)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `);
+  return stmt.run(worker.name, worker.role, worker.team, worker.hire_date, worker.phone, worker.email, 'normal');
+});
+
+ipcMain.handle('update-worker', (event, id, worker) => {
+  const stmt = db.prepare(`
+    UPDATE care_workers 
+    SET name = ?, role = ?, team = ?, phone = ?, email = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `);
+  return stmt.run(worker.name, worker.role, worker.team, worker.phone, worker.email, id);
+});
+
+ipcMain.handle('delete-worker', (event, id) => {
+  const stmt = db.prepare('UPDATE care_workers SET status = "inactive" WHERE id = ?');
+  return stmt.run(id);
+});
+
+ipcMain.handle('search-workers', (event, query) => {
+  const stmt = db.prepare(`
+    SELECT * FROM care_workers 
+    WHERE status = "active" 
+    AND (name LIKE ? OR role LIKE ? OR team LIKE ?)
+  `);
+  const searchTerm = `%${query}%`;
+  return stmt.all(searchTerm, searchTerm, searchTerm);
+});
+
+ipcMain.handle('filter-workers', (event, filters) => {
+  let query = 'SELECT * FROM care_workers WHERE status = "active"';
+  const params = [];
+  
+  if (filters.team && filters.team !== 'all') {
+    query += ' AND team = ?';
+    params.push(filters.team);
+  }
+  
+  if (filters.risk_status && filters.risk_status !== 'all') {
+    query += ' AND risk_status = ?';
+    params.push(filters.risk_status);
+  }
+  
+  return db.prepare(query).all(...params);
+});
+
+// 알림 관리
+ipcMain.handle('acknowledge-alert', (event, alertId) => {
+  const stmt = db.prepare('UPDATE risk_alerts SET acknowledged_at = CURRENT_TIMESTAMP WHERE id = ?');
+  return stmt.run(alertId);
+});
+
+ipcMain.handle('resolve-alert', (event, alertId, notes) => {
+  const stmt = db.prepare('UPDATE risk_alerts SET status = "resolved", resolved_at = CURRENT_TIMESTAMP, notes = ? WHERE id = ?');
+  return stmt.run(notes, alertId);
+});
+
+ipcMain.handle('get-alert-stats', () => {
+  const critical = db.prepare('SELECT COUNT(*) as count FROM risk_alerts WHERE risk_level = "high" AND status = "pending"').get();
+  const high = db.prepare('SELECT COUNT(*) as count FROM risk_alerts WHERE risk_level = "medium" AND status = "pending"').get();
+  const medium = db.prepare('SELECT COUNT(*) as count FROM risk_alerts WHERE risk_level = "low" AND status = "pending"').get();
+  const resolved = db.prepare('SELECT COUNT(*) as count FROM risk_alerts WHERE status = "resolved"').get();
+  
+  return {
+    critical: critical.count,
+    high: high.count,
+    medium: medium.count,
+    resolved: resolved.count
+  };
+});
+
+// 분석 데이터
+ipcMain.handle('get-analytics-data', () => {
+  // 부서별 감정 상태
+  const teamEmotions = db.prepare(`
+    SELECT cw.team, el.emotion_type, COUNT(*) as count
+    FROM care_workers cw
+    JOIN emotion_logs el ON cw.id = el.worker_id
+    WHERE el.timestamp >= datetime('now', '-7 days')
+    GROUP BY cw.team, el.emotion_type
+  `).all();
+  
+  // 월별 번아웃 추이
+  const monthlyBurnout = db.prepare(`
+    SELECT strftime('%Y-%m', alert_date) as month, COUNT(*) as count, AVG(risk_score) as avg_score
+    FROM risk_alerts
+    WHERE alert_date >= datetime('now', '-6 months')
+    GROUP BY month
+    ORDER BY month
+  `).all();
+  
+  return {
+    teamEmotions,
+    monthlyBurnout
+  };
+});
+
+// 리포트 생성
+ipcMain.handle('generate-report', (event, reportType, periodStart, periodEnd) => {
+  const reportData = {
+    workers: db.prepare('SELECT COUNT(*) as count FROM care_workers WHERE status = "active"').get(),
+    alerts: db.prepare(`
+      SELECT COUNT(*) as count, AVG(risk_score) as avg_score
+      FROM risk_alerts 
+      WHERE alert_date BETWEEN ? AND ?
+    `).get(periodStart, periodEnd),
+    emotions: db.prepare(`
+      SELECT emotion_type, COUNT(*) as count
+      FROM emotion_logs
+      WHERE timestamp BETWEEN ? AND ?
+      GROUP BY emotion_type
+    `).all(periodStart, periodEnd)
+  };
+  
+  const summary = `기간: ${periodStart} ~ ${periodEnd}\n활성 인력: ${reportData.workers.count}명\n알림 발생: ${reportData.alerts.count}건\n평균 리스크: ${Math.round(reportData.alerts.avg_score || 0)}%`;
+  
+  const stmt = db.prepare(`
+    INSERT INTO reports (report_type, report_name, period_start, period_end, data, summary)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+  
+  const reportName = `${reportType} 리포트 - ${new Date().toLocaleDateString('ko-KR')}`;
+  
+  return stmt.run(reportType, reportName, periodStart, periodEnd, JSON.stringify(reportData), summary);
+});
+
+ipcMain.handle('get-reports', () => {
+  return db.prepare('SELECT * FROM reports ORDER BY generated_at DESC LIMIT 10').all();
 });
 
 app.whenReady().then(() => {
