@@ -261,16 +261,83 @@ summary TEXT
 
 ```
 goyo/
-├── main.js              # Electron 메인 프로세스
-├── index.html           # 메인 HTML (모든 뷰 포함)
-├── styles.css           # 통합 스타일시트
-├── renderer.js          # 렌더러 프로세스 (UI 로직 + CRUD)
-├── package.json         # 프로젝트 설정
-├── goyo.db             # SQLite 데이터베이스 (자동 생성)
-├── README.md           # 프로젝트 문서
-├── DEMO_GUIDE.md       # 시연회 가이드
-└── run.sh              # 실행 스크립트
+├── main.js                # Electron 메인 프로세스 (Backend + IPC)
+├── index.html             # 메인 HTML (모든 뷰 포함)
+├── styles.css             # 통합 스타일시트 (7,000+ 줄)
+├── renderer.js            # 렌더러 프로세스 (UI 로직 + CRUD)
+├── package.json           # 프로젝트 설정
+├── goyo.db               # SQLite 데이터베이스 (자동 생성)
+├── README.md             # 프로젝트 문서
+├── DEMO_GUIDE.md         # 시연회 가이드
+├── DEV_GUIDE.md          # 개발자 가이드 (Hot Reload)
+├── LIVE_DEMO_SCRIPT.md   # AI MBA 실시간 코딩 데모 스크립트
+├── run.sh                # 프로덕션 실행 스크립트
+└── dev.sh                # 개발 모드 실행 스크립트 (Hot Reload)
 ```
+
+## 🔥 개발 모드 (Hot Reload)
+
+### AI MBA 발표용 - 실시간 코딩 데모
+
+GOYO는 **코드 변경 시 자동 새로고침**되는 개발 모드를 지원합니다.
+
+#### 🚀 개발 모드 실행
+
+```bash
+# 방법 1: npm 스크립트
+npm run dev
+
+# 방법 2: 쉘 스크립트
+./dev.sh
+```
+
+#### ✨ 자동 새로고침되는 파일
+
+- ✅ **index.html** - HTML 구조 변경 시 즉시 반영
+- ✅ **renderer.js** - JavaScript 코드 변경 시 즉시 반영
+- ✅ **styles.css** - CSS 스타일 변경 시 즉시 반영
+- ✅ **main.js** - Backend 변경 시 앱 자동 재시작
+
+#### 🎤 실시간 데모 시나리오 (5분)
+
+**발표 중 실시간으로 코드를 수정하여 즉시 화면에 반영!**
+
+1. **CSS 색상 변경** (30초)
+   - `styles.css`에서 `.stat-card` 색상 변경
+   - 저장 → 즉시 대시보드 카드 색상 변경됨
+
+2. **HTML 텍스트 수정** (30초)
+   - `index.html`에서 제목 변경
+   - 저장 → 즉시 화면 텍스트 업데이트됨
+
+3. **JavaScript 기능 추가** (1분)
+   - `renderer.js`에 새로운 알림 함수 추가
+   - 저장 → 즉시 알림 기능 작동
+
+4. **애니메이션 추가** (30초)
+   - CSS 애니메이션 추가
+   - 저장 → 즉시 버튼이 움직임
+
+📋 **자세한 데모 스크립트**: `LIVE_DEMO_SCRIPT.md` 참조
+
+#### 🛠️ 개발자 도구
+
+개발 모드에서는 **Chrome DevTools**가 자동으로 열립니다:
+- Console: 로그 출력 확인
+- Elements: HTML/CSS 실시간 검사
+- Network: API 호출 모니터링
+- Sources: 디버깅 & 브레이크포인트
+
+#### 💡 프로덕션 실행
+
+```bash
+# Hot Reload 없는 일반 실행
+npm start
+# 또는
+./run.sh
+```
+
+📚 **전체 개발 가이드**: `DEV_GUIDE.md` 참조
 
 ## 핵심 포지셔닝
 

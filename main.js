@@ -2,6 +2,26 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const Database = require('better-sqlite3');
 
+// Hot reload for development
+if (process.argv.includes('--dev')) {
+  try {
+    require('electron-reload')(__dirname, {
+      electron: path.join(__dirname, 'node_modules', '.bin', 'electron'),
+      hardResetMethod: 'exit',
+      ignored: [
+        /node_modules/,
+        /\.db$/,
+        /\.log$/,
+        /package\.json/,
+        /package-lock\.json/
+      ]
+    });
+    console.log('🔥 Hot reload enabled - changes will be automatically reflected!');
+  } catch (err) {
+    console.log('⚠️ electron-reload not found, continuing without hot reload');
+  }
+}
+
 let mainWindow;
 let db;
 
