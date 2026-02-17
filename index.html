@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GOYO - 감정 운영 인텔리전스</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <!-- 상단 타이틀 바 -->
+  <div class="title-bar">
+    <div class="title-bar-left">
+      <div class="logo">GOYO</div>
+      <div class="subtitle">Emotional Operations Intelligence</div>
+    </div>
+    <div class="title-bar-right">
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span>실시간 모니터링</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메인 컨테이너 -->
+  <div class="main-container">
+    <!-- 사이드바 네비게이션 -->
+    <nav class="sidebar">
+      <ul class="nav-menu">
+        <li class="nav-item active" data-view="dashboard">
+          <span class="icon">📊</span>
+          <span class="label">대시보드</span>
+        </li>
+        <li class="nav-item" data-view="alerts">
+          <span class="icon">🔔</span>
+          <span class="label">리스크 알림</span>
+          <span class="badge" id="alert-badge">0</span>
+        </li>
+        <li class="nav-item" data-view="workers">
+          <span class="icon">👥</span>
+          <span class="label">케어 인력</span>
+        </li>
+        <li class="nav-item" data-view="analytics">
+          <span class="icon">📈</span>
+          <span class="label">분석 리포트</span>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- 콘텐츠 영역 -->
+    <main class="content">
+      <!-- 대시보드 뷰 -->
+      <div id="dashboard-view" class="view active">
+        <div class="view-header">
+          <h1>감정 모니터링 대시보드</h1>
+          <p class="view-subtitle">실시간 케어 인력 감정 상태 및 운영 인사이트</p>
+        </div>
+
+        <!-- 통계 카드 -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+              <div class="stat-value" id="total-workers">-</div>
+              <div class="stat-label">활성 케어 인력</div>
+            </div>
+          </div>
+          <div class="stat-card alert">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-content">
+              <div class="stat-value" id="high-risk-count">-</div>
+              <div class="stat-label">고위험 알림</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+              <div class="stat-value" id="avg-emotion-score">-</div>
+              <div class="stat-label">평균 감정 점수</div>
+            </div>
+          </div>
+          <div class="stat-card positive">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+              <div class="stat-value" id="positive-trend">-</div>
+              <div class="stat-label">긍정적 트렌드</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 차트 영역 -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>팀별 감정 분포</h3>
+            <canvas id="emotion-distribution-chart"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>최근 7일 감정 트렌드</h3>
+            <canvas id="emotion-trend-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- 케어 인력 목록 -->
+        <div class="section-card">
+          <h3>케어 인력 현황</h3>
+          <div id="workers-list" class="workers-grid"></div>
+        </div>
+      </div>
+
+      <!-- 리스크 알림 뷰 -->
+      <div id="alerts-view" class="view">
+        <div class="view-header">
+          <h1>🔔 번아웃 리스크 알림</h1>
+          <p class="view-subtitle">실시간 리스크 감지 및 개입 방안</p>
+        </div>
+
+        <div id="alerts-container"></div>
+      </div>
+
+      <!-- 케어 인력 뷰 -->
+      <div id="workers-view" class="view">
+        <div class="view-header">
+          <h1>👥 케어 인력 관리</h1>
+          <p class="view-subtitle">개인별 감정 이력 및 상태 추적</p>
+        </div>
+
+        <div id="workers-detail-container"></div>
+      </div>
+
+      <!-- 분석 리포트 뷰 -->
+      <div id="analytics-view" class="view">
+        <div class="view-header">
+          <h1>📈 운영 인사이트 리포트</h1>
+          <p class="view-subtitle">감정 데이터 기반 운영 의사결정 지원</p>
+        </div>
+
+        <div class="analytics-content">
+          <div class="insight-card">
+            <h3>🎯 핵심 인사이트</h3>
+            <div class="insight-item">
+              <div class="insight-title">감정 운영의 새로운 관점</div>
+              <p>"감정을 측정할 수 있다면, 관리할 수 있습니다. 관리할 수 있다면, 개선할 수 있습니다."</p>
+            </div>
+            <div class="insight-item">
+              <div class="insight-title">조기 감지의 중요성</div>
+              <p>번아웃은 갑자기 오는 것이 아니라 누적되는 것입니다. GOYO는 위기가 되기 전에 감지합니다.</p>
+            </div>
+            <div class="insight-item">
+              <div class="insight-title">데이터 기반 의사결정</div>
+              <p>감정 상태는 서비스 품질과 직결됩니다. 운영 데이터로서 감정을 관리하세요.</p>
+            </div>
+          </div>
+
+          <div class="framework-card">
+            <h3>🔄 Emotional Operations Framework</h3>
+            <div class="framework-steps">
+              <div class="framework-step">
+                <div class="step-number">01</div>
+                <div class="step-content">
+                  <h4>심리상담 원리 적용</h4>
+                  <p>검증된 상담 프레임워크를 운영 환경에 맞게 변환</p>
+                </div>
+              </div>
+              <div class="framework-step">
+                <div class="step-number">02</div>
+                <div class="step-content">
+                  <h4>감정 데이터 수집 및 분석</h4>
+                  <p>상호작용 데이터에서 감정 신호를 태깅하고 패턴 분석</p>
+                </div>
+              </div>
+              <div class="framework-step">
+                <div class="step-number">03</div>
+                <div class="step-content">
+                  <h4>리스크 조기 감지</h4>
+                  <p>번아웃 징후를 사전에 포착하여 운영팀에 알림</p>
+                </div>
+              </div>
+              <div class="framework-step">
+                <div class="step-number">04</div>
+                <div class="step-content">
+                  <h4>개입 방안 제안</h4>
+                  <p>상황에 맞는 구체적인 행동 가이드 제공</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 개입 방안 모달 -->
+  <div id="intervention-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>💡 개입 방안 제안</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body" id="intervention-content">
+        <!-- 동적으로 생성 -->
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
