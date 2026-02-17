@@ -57,6 +57,10 @@
           <span class="icon">🎬</span>
           <span class="label">미리보기</span>
         </li>
+        <li class="nav-item" data-view="data-collection">
+          <span class="icon">📝</span>
+          <span class="label">데이터 수집</span>
+        </li>
       </ul>
     </nav>
 
@@ -898,6 +902,320 @@
                   <li>✓ "데이터 기반 결정"</li>
                 </ul>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 데이터 수집 뷰 -->
+      <div id="data-collection-view" class="view">
+        <div class="view-header">
+          <h1>📝 실시간 감정 데이터 수집</h1>
+          <p class="view-subtitle">다양한 방식으로 케어 인력의 감정 데이터를 수집합니다</p>
+        </div>
+
+        <!-- 데이터 수집 방식 선택 -->
+        <div class="collection-methods-grid">
+          <div class="method-card active" data-method="self">
+            <div class="method-icon">📝</div>
+            <h3>직접 입력</h3>
+            <p>인력이 직접 감정 상태 체크인</p>
+            <span class="method-status available">사용 가능</span>
+          </div>
+          
+          <div class="method-card active" data-method="manager">
+            <div class="method-icon">👨‍💼</div>
+            <h3>관리자 입력</h3>
+            <p>관리자가 면담 후 데이터 입력</p>
+            <span class="method-status available">사용 가능</span>
+          </div>
+          
+          <div class="method-card" data-method="auto">
+            <div class="method-icon">🤖</div>
+            <h3>자동 수집</h3>
+            <p>웨어러블/센서 데이터 자동 반영</p>
+            <span class="method-status future">향후 예정</span>
+          </div>
+          
+          <div class="method-card" data-method="mobile">
+            <div class="method-icon">📱</div>
+            <h3>모바일 체크인</h3>
+            <p>QR/이모지 기반 간편 체크인</p>
+            <span class="method-status future">향후 예정</span>
+          </div>
+        </div>
+
+        <!-- 탭 선택 -->
+        <div class="collection-tabs">
+          <button class="collection-tab-btn active" data-tab="self-input">📝 직접 입력</button>
+          <button class="collection-tab-btn" data-tab="manager-input">👨‍💼 관리자 입력</button>
+          <button class="collection-tab-btn" data-tab="batch-input">📊 일괄 입력</button>
+          <button class="collection-tab-btn" data-tab="recent-logs">📋 최근 기록</button>
+        </div>
+
+        <!-- 직접 입력 탭 -->
+        <div id="self-input-tab" class="collection-tab-content active">
+          <div class="input-section-card">
+            <div class="section-header">
+              <h3>📝 감정 상태 체크인</h3>
+              <p>오늘의 감정 상태를 선택해주세요</p>
+            </div>
+
+            <form id="self-checkin-form">
+              <div class="form-row">
+                <div class="form-group full-width">
+                  <label for="self-worker-select">이름 선택 *</label>
+                  <select id="self-worker-select" required>
+                    <option value="">선택하세요</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>오늘의 감정 상태 *</label>
+                <div class="emotion-grid">
+                  <label class="emotion-option">
+                    <input type="radio" name="emotion" value="긍정적" required>
+                    <div class="emotion-card positive">
+                      <div class="emotion-emoji">😊</div>
+                      <div class="emotion-label">긍정적</div>
+                      <div class="emotion-desc">활기차고 행복한 상태</div>
+                    </div>
+                  </label>
+
+                  <label class="emotion-option">
+                    <input type="radio" name="emotion" value="만족">
+                    <div class="emotion-card satisfied">
+                      <div class="emotion-emoji">😌</div>
+                      <div class="emotion-label">만족</div>
+                      <div class="emotion-desc">편안하고 만족스러운 상태</div>
+                    </div>
+                  </label>
+
+                  <label class="emotion-option">
+                    <input type="radio" name="emotion" value="중립적">
+                    <div class="emotion-card neutral">
+                      <div class="emotion-emoji">😐</div>
+                      <div class="emotion-label">중립적</div>
+                      <div class="emotion-desc">평범한 일상적 상태</div>
+                    </div>
+                  </label>
+
+                  <label class="emotion-option">
+                    <input type="radio" name="emotion" value="피로">
+                    <div class="emotion-card tired">
+                      <div class="emotion-emoji">😓</div>
+                      <div class="emotion-label">피로</div>
+                      <div class="emotion-desc">몸과 마음이 지친 상태</div>
+                    </div>
+                  </label>
+
+                  <label class="emotion-option">
+                    <input type="radio" name="emotion" value="스트레스">
+                    <div class="emotion-card stressed">
+                      <div class="emotion-emoji">😰</div>
+                      <div class="emotion-label">스트레스</div>
+                      <div class="emotion-desc">압박감과 불안감</div>
+                    </div>
+                  </label>
+
+                  <label class="emotion-option">
+                    <input type="radio" name="emotion" value="부정적">
+                    <div class="emotion-card negative">
+                      <div class="emotion-emoji">😢</div>
+                      <div class="emotion-label">부정적</div>
+                      <div class="emotion-desc">힘들고 우울한 상태</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="self-intensity">감정 강도 *</label>
+                <div class="intensity-slider">
+                  <input type="range" id="self-intensity" min="1" max="10" value="5" required>
+                  <div class="intensity-labels">
+                    <span>약함 (1)</span>
+                    <span id="intensity-value">5</span>
+                    <span>강함 (10)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="self-notes">추가 메모 (선택)</label>
+                <textarea id="self-notes" rows="3" placeholder="오늘 특별히 기록하고 싶은 내용이 있나요?"></textarea>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-large">
+                  ✅ 체크인 완료
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- 관리자 입력 탭 -->
+        <div id="manager-input-tab" class="collection-tab-content">
+          <div class="input-section-card">
+            <div class="section-header">
+              <h3>👨‍💼 관리자 감정 기록</h3>
+              <p>면담 결과 또는 관찰 내용을 기록합니다</p>
+            </div>
+
+            <form id="manager-input-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="manager-worker-select">대상 인력 *</label>
+                  <select id="manager-worker-select" required>
+                    <option value="">선택하세요</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="manager-date">기록 일자 *</label>
+                  <input type="date" id="manager-date" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>관찰된 감정 상태 *</label>
+                <div class="emotion-select-row">
+                  <label class="emotion-chip">
+                    <input type="radio" name="manager-emotion" value="긍정적" required>
+                    <span class="chip positive">😊 긍정적</span>
+                  </label>
+                  <label class="emotion-chip">
+                    <input type="radio" name="manager-emotion" value="만족">
+                    <span class="chip satisfied">😌 만족</span>
+                  </label>
+                  <label class="emotion-chip">
+                    <input type="radio" name="manager-emotion" value="중립적">
+                    <span class="chip neutral">😐 중립적</span>
+                  </label>
+                  <label class="emotion-chip">
+                    <input type="radio" name="manager-emotion" value="피로">
+                    <span class="chip tired">😓 피로</span>
+                  </label>
+                  <label class="emotion-chip">
+                    <input type="radio" name="manager-emotion" value="스트레스">
+                    <span class="chip stressed">😰 스트레스</span>
+                  </label>
+                  <label class="emotion-chip">
+                    <input type="radio" name="manager-emotion" value="부정적">
+                    <span class="chip negative">😢 부정적</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="manager-intensity">감정 강도 *</label>
+                  <select id="manager-intensity" required>
+                    <option value="">선택하세요</option>
+                    <option value="1">1 - 매우 약함</option>
+                    <option value="2">2 - 약함</option>
+                    <option value="3">3 - 약간 약함</option>
+                    <option value="4">4 - 보통 이하</option>
+                    <option value="5">5 - 보통</option>
+                    <option value="6">6 - 보통 이상</option>
+                    <option value="7">7 - 약간 강함</option>
+                    <option value="8">8 - 강함</option>
+                    <option value="9">9 - 매우 강함</option>
+                    <option value="10">10 - 극도로 강함</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="manager-source">기록 출처 *</label>
+                  <select id="manager-source" required>
+                    <option value="면담">1:1 면담</option>
+                    <option value="관찰">직접 관찰</option>
+                    <option value="회의">팀 회의</option>
+                    <option value="동료">동료 피드백</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="manager-notes">상세 관찰 내용 *</label>
+                <textarea id="manager-notes" rows="4" placeholder="면담 내용, 관찰 결과, 특이사항 등을 상세히 기록해주세요..." required></textarea>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-large">
+                  💾 기록 저장
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- 일괄 입력 탭 -->
+        <div id="batch-input-tab" class="collection-tab-content">
+          <div class="input-section-card">
+            <div class="section-header">
+              <h3>📊 일괄 데이터 입력</h3>
+              <p>여러 인력의 감정 데이터를 한 번에 입력합니다</p>
+            </div>
+
+            <div class="batch-input-container">
+              <div class="batch-header">
+                <button class="btn btn-secondary" id="add-batch-row">+ 인력 추가</button>
+                <button class="btn btn-primary" id="submit-batch">💾 일괄 저장</button>
+              </div>
+
+              <div class="batch-table-container">
+                <table class="batch-input-table">
+                  <thead>
+                    <tr>
+                      <th>이름</th>
+                      <th>감정 상태</th>
+                      <th>강도</th>
+                      <th>메모</th>
+                      <th>작업</th>
+                    </tr>
+                  </thead>
+                  <tbody id="batch-input-body">
+                    <!-- 동적 생성 -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 최근 기록 탭 -->
+        <div id="recent-logs-tab" class="collection-tab-content">
+          <div class="input-section-card">
+            <div class="section-header">
+              <h3>📋 최근 감정 기록</h3>
+              <p>최근 입력된 감정 데이터 내역</p>
+            </div>
+
+            <div class="filter-bar">
+              <select id="log-worker-filter">
+                <option value="all">전체 인력</option>
+              </select>
+              <select id="log-emotion-filter">
+                <option value="all">전체 감정</option>
+                <option value="긍정적">긍정적</option>
+                <option value="만족">만족</option>
+                <option value="중립적">중립적</option>
+                <option value="피로">피로</option>
+                <option value="스트레스">스트레스</option>
+                <option value="부정적">부정적</option>
+              </select>
+              <select id="log-period-filter">
+                <option value="today">오늘</option>
+                <option value="week">최근 7일</option>
+                <option value="month">최근 30일</option>
+              </select>
+            </div>
+
+            <div id="recent-logs-container">
+              <!-- 동적 생성 -->
             </div>
           </div>
         </div>

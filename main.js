@@ -714,3 +714,101 @@ ipcMain.handle('add-counseling-history', (event, history) => {
   );
 });
 
+
+// ==================== 감정 로그 추가 ====================
+ipcMain.handle('add-emotion-log', async (event, data) => {
+  const { worker_id, emotion_type, intensity, notes, logged_at } = data;
+  
+  const date = logged_at || new Date().toISOString().split('T')[0];
+  
+  const stmt = db.prepare(`
+    INSERT INTO emotion_logs (worker_id, emotion_type, intensity, notes, logged_at)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+  
+  stmt.run(worker_id, emotion_type, intensity, notes, date);
+  
+  // 워커의 리스크 상태 재계산
+  await updateWorkerRiskStatus(worker_id);
+  
+  return { success: true };
+});
+
+// ==================== 최근 감정 로그 조회 ====================
+ipcMain.handle('get-recent-emotion-logs', async (event, options = {}) => {
+  const limit = options.limit || 20;
+  
+  const logs = db.prepare(`
+    SELECT 
+      el.*,
+      cw.name as worker_name,
+      cw.role as worker_role,
+      cw.team as worker_team
+    FROM emotion_logs el
+    LEFT JOIN care_workers cw ON el.worker_id = cw.id
+    ORDER BY el.logged_at DESC, el.created_at DESC
+    LIMIT ?
+  `).all(limit);
+  
+  return logs;
+});
+
+// ==================== 워커 리스크 상태 업데이트 ====================
+async function updateWorkerRiskStatus(workerId) {
+  // 최근 7일간의 감정 로그 분석
+  const recentLogs = db.prepare(`
+    SELECT emotion_type, intensity
+    FROM emotion_logs
+    WHERE worker_id = ? AND logged_at >= date('now', '-7 days')
+    ORDER BY logged_at DESC
+  `).all(workerId);
+  
+  if (recentLogs.length === 0) return;
+  
+  // 부정적 감정 비율 계산
+  const negativeEmotions = ['피로', '스트레스', '부정적'];
+  const negativeCount = recentLogs.filter(log => 
+    negativeEmotions.includes(log.emotion_type)
+  ).length;
+  
+  const negativeRatio = negativeCount / recentLogs.length;
+  
+  // 평균 강도 계산
+  const avgIntensity = recentLogs.reduce((sum, log) => sum + log.intensity, 0) / recentLogs.length;
+  
+  // 리스크 레벨 결정
+  let riskStatus = 'normal';
+  if (negativeRatio > 0.6 || avgIntensity > 7) {
+    riskStatus = 'danger';
+  } else if (negativeRatio > 0.4 || avgIntensity > 5.5) {
+    riskStatus = 'warning';
+  }
+  
+  // 워커 상태 업데이트
+  db.prepare(`
+    UPDATE care_workers
+    SET risk_status = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `).run(riskStatus, workerId);
+  
+  // 고위험인 경우 알림 생성 (중복 체크)
+  if (riskStatus === 'danger') {
+    const existingAlert = db.prepare(`
+      SELECT id FROM risk_alerts
+      WHERE worker_id = ? AND status = 'pending'
+    `).get(workerId);
+    
+    if (!existingAlert) {
+      const worker = db.prepare('SELECT * FROM care_workers WHERE id = ?').get(workerId);
+      db.prepare(`
+        INSERT INTO risk_alerts (worker_id, risk_level, description, status)
+        VALUES (?, ?, ?, ?)
+      `).run(
+        workerId,
+        'high',
+        `${worker.name}님의 최근 7일간 부정 감정 비율이 ${Math.round(negativeRatio * 100)}%로 높습니다.`,
+        'pending'
+      );
+    }
+  }
+}

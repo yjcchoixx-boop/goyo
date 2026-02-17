@@ -64,6 +64,9 @@ async function switchView(view) {
     case 'preview':
       loadPreviewView();
       break;
+    case 'data-collection':
+      await loadDataCollectionView();
+      break;
   }
 }
 
@@ -1606,5 +1609,266 @@ function setupPreviewTabs() {
         targetContent.classList.add('active');
       }
     });
+  });
+}
+
+// ==================== 데이터 수집 시스템 ====================
+
+// 데이터 수집 뷰 로드
+async function loadDataCollectionView() {
+  await loadWorkerSelects();
+  setupCollectionTabs();
+  setupIntensitySlider();
+  setupForms();
+  loadRecentLogs();
+}
+
+// 워커 선택 드롭다운 로드
+async function loadWorkerSelects() {
+  try {
+    const workers = await window.api.invoke('get-workers');
+    
+    // 직접 입력용
+    const selfSelect = document.getElementById('self-worker-select');
+    if (selfSelect) {
+      selfSelect.innerHTML = '<option value="">선택하세요</option>' +
+        workers.filter(w => w.status === 'active').map(w => 
+          `<option value="${w.id}">${w.name} - ${w.role}</option>`
+        ).join('');
+    }
+    
+    // 관리자 입력용
+    const managerSelect = document.getElementById('manager-worker-select');
+    if (managerSelect) {
+      managerSelect.innerHTML = '<option value="">선택하세요</option>' +
+        workers.filter(w => w.status === 'active').map(w => 
+          `<option value="${w.id}">${w.name} - ${w.role} (${w.team})</option>`
+        ).join('');
+    }
+    
+    // 필터용
+    const filterSelect = document.getElementById('log-worker-filter');
+    if (filterSelect) {
+      filterSelect.innerHTML = '<option value="all">전체 인력</option>' +
+        workers.map(w => 
+          `<option value="${w.id}">${w.name}</option>`
+        ).join('');
+    }
+    
+  } catch (error) {
+    console.error('워커 목록 로드 실패:', error);
+  }
+}
+
+// 수집 탭 설정
+function setupCollectionTabs() {
+  const tabBtns = document.querySelectorAll('.collection-tab-btn');
+  const tabContents = document.querySelectorAll('.collection-tab-content');
+  
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const tabName = this.dataset.tab;
+      
+      // 모든 탭 비활성화
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(c => c.classList.remove('active'));
+      
+      // 선택된 탭 활성화
+      this.classList.add('active');
+      document.getElementById(`${tabName}-tab`).classList.add('active');
+      
+      if (tabName === 'recent-logs') {
+        loadRecentLogs();
+      }
+    });
+  });
+}
+
+// 강도 슬라이더 설정
+function setupIntensitySlider() {
+  const slider = document.getElementById('self-intensity');
+  const valueDisplay = document.getElementById('intensity-value');
+  
+  if (slider && valueDisplay) {
+    slider.addEventListener('input', function() {
+      valueDisplay.textContent = this.value;
+    });
+  }
+}
+
+// 폼 설정
+function setupForms() {
+  // 직접 입력 폼
+  const selfForm = document.getElementById('self-checkin-form');
+  if (selfForm) {
+    selfForm.addEventListener('submit', handleSelfCheckin);
+  }
+  
+  // 관리자 입력 폼
+  const managerForm = document.getElementById('manager-input-form');
+  if (managerForm) {
+    // 오늘 날짜 기본값
+    const dateInput = document.getElementById('manager-date');
+    if (dateInput) {
+      dateInput.value = new Date().toISOString().split('T')[0];
+    }
+    managerForm.addEventListener('submit', handleManagerInput);
+  }
+}
+
+// 직접 체크인 처리
+async function handleSelfCheckin(e) {
+  e.preventDefault();
+  
+  const workerId = document.getElementById('self-worker-select').value;
+  const emotion = document.querySelector('input[name="emotion"]:checked').value;
+  const intensity = document.getElementById('self-intensity').value;
+  const notes = document.getElementById('self-notes').value;
+  
+  try {
+    await window.api.invoke('add-emotion-log', {
+      worker_id: parseInt(workerId),
+      emotion_type: emotion,
+      intensity: parseInt(intensity),
+      notes: notes || null
+    });
+    
+    // 성공 메시지
+    alert('✅ 체크인이 완료되었습니다!');
+    
+    // 폼 초기화
+    e.target.reset();
+    document.getElementById('intensity-value').textContent = '5';
+    
+    // 대시보드 새로고침
+    if (currentView === 'dashboard') {
+      await loadDashboard();
+    }
+    
+  } catch (error) {
+    console.error('체크인 실패:', error);
+    alert('❌ 체크인에 실패했습니다: ' + error.message);
+  }
+}
+
+// 관리자 입력 처리
+async function handleManagerInput(e) {
+  e.preventDefault();
+  
+  const workerId = document.getElementById('manager-worker-select').value;
+  const date = document.getElementById('manager-date').value;
+  const emotion = document.querySelector('input[name="manager-emotion"]:checked').value;
+  const intensity = document.getElementById('manager-intensity').value;
+  const source = document.getElementById('manager-source').value;
+  const notes = document.getElementById('manager-notes').value;
+  
+  try {
+    await window.api.invoke('add-emotion-log', {
+      worker_id: parseInt(workerId),
+      emotion_type: emotion,
+      intensity: parseInt(intensity),
+      notes: `[${source}] ${notes}`,
+      logged_at: date
+    });
+    
+    // 성공 메시지
+    alert('✅ 감정 기록이 저장되었습니다!');
+    
+    // 폼 초기화
+    e.target.reset();
+    document.getElementById('manager-date').value = new Date().toISOString().split('T')[0];
+    
+    // 대시보드 새로고침
+    if (currentView === 'dashboard') {
+      await loadDashboard();
+    }
+    
+  } catch (error) {
+    console.error('기록 저장 실패:', error);
+    alert('❌ 기록 저장에 실패했습니다: ' + error.message);
+  }
+}
+
+// 최근 로그 로드
+async function loadRecentLogs() {
+  try {
+    const logs = await window.api.invoke('get-recent-emotion-logs', { limit: 20 });
+    const container = document.getElementById('recent-logs-container');
+    
+    if (!logs || logs.length === 0) {
+      container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><h3>기록이 없습니다</h3><p>감정 데이터를 입력해주세요.</p></div>';
+      return;
+    }
+    
+    container.innerHTML = logs.map(log => {
+      const emotionClass = getEmotionClass(log.emotion_type);
+      return `
+        <div class="log-item">
+          <div class="log-info">
+            <div class="log-header">
+              <span class="log-worker-name">${log.worker_name || '알 수 없음'}</span>
+              <span class="log-emotion-badge ${emotionClass}">${getEmotionEmoji(log.emotion_type)} ${log.emotion_type}</span>
+              <span class="intensity-badge">강도: ${log.intensity}/10</span>
+            </div>
+            <div class="log-details">
+              ${log.notes ? log.notes : '추가 메모 없음'}
+            </div>
+          </div>
+          <div class="log-time">
+            ${formatDateTime(log.logged_at)}
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+  } catch (error) {
+    console.error('최근 로그 로드 실패:', error);
+  }
+}
+
+// 감정 타입별 클래스
+function getEmotionClass(emotion) {
+  const classes = {
+    '긍정적': 'positive',
+    '만족': 'satisfied',
+    '중립적': 'neutral',
+    '피로': 'tired',
+    '스트레스': 'stressed',
+    '부정적': 'negative'
+  };
+  return classes[emotion] || 'neutral';
+}
+
+// 감정 이모지
+function getEmotionEmoji(emotion) {
+  const emojis = {
+    '긍정적': '😊',
+    '만족': '😌',
+    '중립적': '😐',
+    '피로': '😓',
+    '스트레스': '😰',
+    '부정적': '😢'
+  };
+  return emojis[emotion] || '😐';
+}
+
+// 날짜 시간 포맷
+function formatDateTime(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diff = now - date;
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor(diff / (1000 * 60));
+  
+  if (minutes < 1) return '방금 전';
+  if (minutes < 60) return `${minutes}분 전`;
+  if (hours < 24) return `${hours}시간 전`;
+  
+  return date.toLocaleString('ko-KR', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
   });
 }
