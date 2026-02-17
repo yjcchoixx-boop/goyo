@@ -61,6 +61,9 @@ async function switchView(view) {
     case 'counseling':
       await loadCounselingView();
       break;
+    case 'preview':
+      loadPreviewView();
+      break;
   }
 }
 
@@ -1575,3 +1578,33 @@ async function filterSessions() {
 document.addEventListener('DOMContentLoaded', () => {
   setupCounselingTabs();
 });
+
+// ==================== 미리보기 시스템 ====================
+
+// 미리보기 뷰 로드
+function loadPreviewView() {
+  setupPreviewTabs();
+}
+
+// 미리보기 탭 설정
+function setupPreviewTabs() {
+  const tabBtns = document.querySelectorAll('.preview-tab-btn');
+  const tabContents = document.querySelectorAll('.preview-content');
+  
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const previewType = this.dataset.preview;
+      
+      // 모든 탭 비활성화
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(c => c.classList.remove('active'));
+      
+      // 선택된 탭 활성화
+      this.classList.add('active');
+      const targetContent = document.getElementById(`${previewType}-preview`);
+      if (targetContent) {
+        targetContent.classList.add('active');
+      }
+    });
+  });
+}

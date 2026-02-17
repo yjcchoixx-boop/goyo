@@ -1548,3 +1548,557 @@ body {
   font-size: 0.9rem;
   line-height: 1.6;
 }
+
+/* 미리보기 스타일 */
+.preview-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  overflow-x: auto;
+}
+
+.preview-tab-btn {
+  padding: 1rem 2rem;
+  background: none;
+  border: none;
+  color: #8e9aaf;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  white-space: nowrap;
+}
+
+.preview-tab-btn:hover {
+  color: #667eea;
+}
+
+.preview-tab-btn.active {
+  color: #667eea;
+}
+
+.preview-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.preview-content {
+  display: none;
+}
+
+.preview-content.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+.preview-section {
+  margin-bottom: 3rem;
+}
+
+.preview-section h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+.feature-highlight-box {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.highlight-text {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.feature-highlight-box p {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #8e9aaf;
+}
+
+.system-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.system-card {
+  background: #1a1f2e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  transition: all 0.3s ease;
+}
+
+.system-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+.system-card.highlight {
+  border-color: rgba(102, 126, 234, 0.5);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+}
+
+.system-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.system-card h3 {
+  font-size: 1.3rem;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
+}
+
+.system-card p {
+  color: #8e9aaf;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.feature-list li {
+  color: #8e9aaf;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.feature-list li:last-child {
+  border-bottom: none;
+}
+
+.stats-showcase {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.stat-showcase-item {
+  text-align: center;
+  padding: 2rem;
+  background: #1a1f2e;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-showcase-number {
+  font-size: 3rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.stat-showcase-label {
+  font-size: 0.9rem;
+  color: #8e9aaf;
+}
+
+/* 기능 데모 카드 */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+}
+
+.feature-demo-card {
+  background: #1a1f2e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.feature-demo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+.feature-demo-header {
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feature-demo-header h3 {
+  font-size: 1.2rem;
+  color: #ffffff;
+  margin: 0;
+}
+
+.feature-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(102, 126, 234, 0.2);
+  color: #667eea;
+}
+
+.feature-badge.alert {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.feature-badge.new {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.feature-demo-body {
+  padding: 1.5rem;
+}
+
+.feature-screenshot {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feature-demo-body p {
+  color: #8e9aaf;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.feature-tech-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tech-tag {
+  padding: 0.25rem 0.75rem;
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #667eea;
+}
+
+/* 워크플로우 다이어그램 */
+.workflow-diagram {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.workflow-step {
+  background: #1a1f2e;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.workflow-step:hover {
+  border-color: rgba(102, 126, 234, 0.5);
+  transform: translateX(8px);
+}
+
+.workflow-step.highlight {
+  border-color: rgba(102, 126, 234, 0.5);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+}
+
+.workflow-number {
+  position: absolute;
+  top: -15px;
+  left: 2rem;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.workflow-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.workflow-step h3 {
+  font-size: 1.5rem;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
+}
+
+.workflow-step p {
+  color: #8e9aaf;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.workflow-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.detail-tag {
+  padding: 0.25rem 0.75rem;
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #667eea;
+}
+
+.detail-tag.alert {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.detail-tag.new {
+  background: rgba(74, 222, 128, 0.1);
+  border-color: rgba(74, 222, 128, 0.3);
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.workflow-arrow {
+  text-align: center;
+  color: #667eea;
+  font-size: 2rem;
+  margin: 0.5rem 0;
+}
+
+/* 가치 제안 */
+.value-props {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.value-card {
+  background: #1a1f2e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.value-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+.value-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.value-card h3 {
+  font-size: 1.3rem;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
+}
+
+.value-card p {
+  color: #8e9aaf;
+  line-height: 1.6;
+}
+
+/* 데모 타임라인 */
+.demo-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.demo-step {
+  display: flex;
+  gap: 2rem;
+  background: #1a1f2e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  transition: all 0.3s ease;
+}
+
+.demo-step:hover {
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+.demo-step.highlight {
+  border-color: rgba(102, 126, 234, 0.5);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+}
+
+.demo-time {
+  min-width: 120px;
+  padding: 0.5rem 1rem;
+  background: rgba(102, 126, 234, 0.2);
+  border-radius: 8px;
+  color: #667eea;
+  font-weight: 600;
+  text-align: center;
+  height: fit-content;
+}
+
+.demo-content {
+  flex: 1;
+}
+
+.demo-content h3 {
+  font-size: 1.3rem;
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.demo-script {
+  margin: 1rem 0;
+}
+
+.demo-line {
+  color: #8e9aaf;
+  line-height: 1.8;
+  margin: 0.5rem 0;
+}
+
+.demo-line.strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.demo-line .highlight {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.demo-list {
+  list-style: none;
+  padding-left: 1rem;
+  margin: 1rem 0;
+}
+
+.demo-list li {
+  color: #8e9aaf;
+  padding: 0.5rem 0;
+  position: relative;
+}
+
+.demo-list li::before {
+  content: '→';
+  position: absolute;
+  left: -1rem;
+  color: #667eea;
+}
+
+.demo-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.action-item {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-left: 3px solid #667eea;
+  border-radius: 4px;
+}
+
+.action-item.new {
+  border-left-color: #4ade80;
+  background: rgba(74, 222, 128, 0.05);
+}
+
+.action-item strong {
+  color: #ffffff;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.action-item p {
+  color: #8e9aaf;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* 체크리스트 */
+.checklist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.checklist-card {
+  background: #1a1f2e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.checklist-card h4 {
+  font-size: 1.2rem;
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.checklist li {
+  color: #8e9aaf;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  line-height: 1.6;
+}
+
+.checklist li:last-child {
+  border-bottom: none;
+}

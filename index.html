@@ -53,6 +53,10 @@
           <span class="label">심리상담 연계</span>
           <span class="badge" id="counseling-badge">0</span>
         </li>
+        <li class="nav-item" data-view="preview">
+          <span class="icon">🎬</span>
+          <span class="label">미리보기</span>
+        </li>
       </ul>
     </nav>
 
@@ -416,6 +420,486 @@
         <div class="section-card">
           <h3>📋 최근 생성 리포트</h3>
           <div id="reports-list"></div>
+        </div>
+      </div>
+
+      <!-- 미리보기 뷰 -->
+      <div id="preview-view" class="view">
+        <div class="view-header">
+          <h1>🎬 GOYO 시스템 미리보기</h1>
+          <p class="view-subtitle">주요 기능과 화면을 한눈에 확인하세요</p>
+        </div>
+
+        <!-- 미리보기 탭 -->
+        <div class="preview-tabs">
+          <button class="preview-tab-btn active" data-preview="overview">📊 전체 개요</button>
+          <button class="preview-tab-btn" data-preview="features">⚡ 주요 기능</button>
+          <button class="preview-tab-btn" data-preview="workflow">🔄 워크플로우</button>
+          <button class="preview-tab-btn" data-preview="demo">🎯 데모 시나리오</button>
+        </div>
+
+        <!-- 전체 개요 탭 -->
+        <div id="overview-preview" class="preview-content active">
+          <div class="preview-section">
+            <h2>🎯 GOYO란?</h2>
+            <div class="feature-highlight-box">
+              <p class="highlight-text">
+                <strong>GOYO (GOal-oriented Youth Operations)</strong>는 케어 환경의 
+                <span class="gradient-text">감정 운영 인텔리전스</span> 시스템입니다.
+              </p>
+              <p>
+                케어 인력의 감정 신호를 측정 가능한 운영 데이터로 전환하여, 
+                <strong>번아웃을 예방</strong>하고 조직의 지속 가능성을 높입니다.
+              </p>
+            </div>
+          </div>
+
+          <div class="preview-section">
+            <h2>📊 시스템 구성</h2>
+            <div class="system-overview-grid">
+              <div class="system-card">
+                <div class="system-icon">📊</div>
+                <h3>실시간 모니터링</h3>
+                <p>케어 인력의 감정 상태를 실시간으로 추적하고 시각화합니다.</p>
+                <ul class="feature-list">
+                  <li>✓ 5개 통계 카드</li>
+                  <li>✓ 2개 실시간 차트</li>
+                  <li>✓ 알림 패널</li>
+                  <li>✓ 인력 현황 리스트</li>
+                </ul>
+              </div>
+
+              <div class="system-card">
+                <div class="system-icon">🔔</div>
+                <h3>조기 경보</h3>
+                <p>위험 신호를 조기에 감지하여 예방적 개입을 가능하게 합니다.</p>
+                <ul class="feature-list">
+                  <li>✓ 4단계 위험도 분류</li>
+                  <li>✓ 실시간 알림</li>
+                  <li>✓ 개입 방안 제안</li>
+                  <li>✓ 알림 이력 추적</li>
+                </ul>
+              </div>
+
+              <div class="system-card">
+                <div class="system-icon">👥</div>
+                <h3>인력 관리</h3>
+                <p>케어 인력의 정보와 감정 이력을 통합 관리합니다.</p>
+                <ul class="feature-list">
+                  <li>✓ Full CRUD 기능</li>
+                  <li>✓ 실시간 검색</li>
+                  <li>✓ 다중 필터</li>
+                  <li>✓ 상세 프로필</li>
+                </ul>
+              </div>
+
+              <div class="system-card">
+                <div class="system-icon">📈</div>
+                <h3>데이터 분석</h3>
+                <p>감정 데이터를 다양한 관점에서 분석하고 인사이트를 도출합니다.</p>
+                <ul class="feature-list">
+                  <li>✓ 6종류 차트</li>
+                  <li>✓ 부서별 비교</li>
+                  <li>✓ 시간별 추이</li>
+                  <li>✓ 패턴 분석</li>
+                </ul>
+              </div>
+
+              <div class="system-card">
+                <div class="system-icon">📝</div>
+                <h3>리포트 시스템</h3>
+                <p>주기별 리포트를 자동 생성하여 의사결정을 지원합니다.</p>
+                <ul class="feature-list">
+                  <li>✓ 4종류 리포트</li>
+                  <li>✓ 자동 생성</li>
+                  <li>✓ 이력 관리</li>
+                  <li>✓ 인사이트 제공</li>
+                </ul>
+              </div>
+
+              <div class="system-card highlight">
+                <div class="system-icon">🧠</div>
+                <h3>심리상담 연계</h3>
+                <p>고위험군을 자동 감지하여 전문 상담사와 즉시 연계합니다.</p>
+                <ul class="feature-list">
+                  <li>✓ 자동 매칭</li>
+                  <li>✓ 상담사 관리</li>
+                  <li>✓ 세션 추적</li>
+                  <li>✓ 결과 기록</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-section">
+            <h2>📊 주요 통계</h2>
+            <div class="stats-showcase">
+              <div class="stat-showcase-item">
+                <div class="stat-showcase-number">4,407</div>
+                <div class="stat-showcase-label">총 코드 라인</div>
+              </div>
+              <div class="stat-showcase-item">
+                <div class="stat-showcase-number">28</div>
+                <div class="stat-showcase-label">API 엔드포인트</div>
+              </div>
+              <div class="stat-showcase-item">
+                <div class="stat-showcase-number">8</div>
+                <div class="stat-showcase-label">데이터베이스 테이블</div>
+              </div>
+              <div class="stat-showcase-item">
+                <div class="stat-showcase-number">6</div>
+                <div class="stat-showcase-label">주요 뷰</div>
+              </div>
+              <div class="stat-showcase-item">
+                <div class="stat-showcase-number">6</div>
+                <div class="stat-showcase-label">차트 종류</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 주요 기능 탭 -->
+        <div id="features-preview" class="preview-content">
+          <div class="features-grid">
+            <div class="feature-demo-card">
+              <div class="feature-demo-header">
+                <h3>📊 실시간 대시보드</h3>
+                <span class="feature-badge">Core</span>
+              </div>
+              <div class="feature-demo-body">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%231a1f2e' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' fill='%23667eea' font-size='20' text-anchor='middle' dominant-baseline='middle'%3E대시보드 스크린샷%3C/text%3E%3C/svg%3E" alt="Dashboard" class="feature-screenshot">
+                <p>전체 인력 현황, 감정 상태 분포, 번아웃 추이를 실시간으로 모니터링</p>
+                <div class="feature-tech-tags">
+                  <span class="tech-tag">Chart.js</span>
+                  <span class="tech-tag">실시간 업데이트</span>
+                  <span class="tech-tag">반응형</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="feature-demo-card">
+              <div class="feature-demo-header">
+                <h3>🔔 조기 경보 시스템</h3>
+                <span class="feature-badge alert">Critical</span>
+              </div>
+              <div class="feature-demo-body">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%231a1f2e' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' fill='%23ef4444' font-size='20' text-anchor='middle' dominant-baseline='middle'%3E알림 시스템 스크린샷%3C/text%3E%3C/svg%3E" alt="Alerts" class="feature-screenshot">
+                <p>위험도별 알림 분류, 개입 방안 자동 제안, 알림 확인 및 해결 관리</p>
+                <div class="feature-tech-tags">
+                  <span class="tech-tag">위험도 분석</span>
+                  <span class="tech-tag">자동 알림</span>
+                  <span class="tech-tag">개입 제안</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="feature-demo-card">
+              <div class="feature-demo-header">
+                <h3>🧠 심리상담 연계</h3>
+                <span class="feature-badge new">NEW</span>
+              </div>
+              <div class="feature-demo-body">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%231a1f2e' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' fill='%234ade80' font-size='20' text-anchor='middle' dominant-baseline='middle'%3E상담 연계 스크린샷%3C/text%3E%3C/svg%3E" alt="Counseling" class="feature-screenshot">
+                <p>고위험군 자동 감지 → 가용 상담사 매칭 → 세션 진행 → 결과 추적</p>
+                <div class="feature-tech-tags">
+                  <span class="tech-tag">자동 매칭</span>
+                  <span class="tech-tag">상담사 관리</span>
+                  <span class="tech-tag">이력 추적</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="feature-demo-card">
+              <div class="feature-demo-header">
+                <h3>👥 인력 관리</h3>
+                <span class="feature-badge">CRUD</span>
+              </div>
+              <div class="feature-demo-body">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%231a1f2e' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' fill='%23fbbf24' font-size='20' text-anchor='middle' dominant-baseline='middle'%3E인력 관리 스크린샷%3C/text%3E%3C/svg%3E" alt="Workers" class="feature-screenshot">
+                <p>인력 추가/수정/삭제, 실시간 검색, 부서/상태 필터링, 상세 프로필</p>
+                <div class="feature-tech-tags">
+                  <span class="tech-tag">Full CRUD</span>
+                  <span class="tech-tag">실시간 검색</span>
+                  <span class="tech-tag">다중 필터</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="feature-demo-card">
+              <div class="feature-demo-header">
+                <h3>📈 데이터 분석</h3>
+                <span class="feature-badge">Analytics</span>
+              </div>
+              <div class="feature-demo-body">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%231a1f2e' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' fill='%23667eea' font-size='20' text-anchor='middle' dominant-baseline='middle'%3E분석 차트 스크린샷%3C/text%3E%3C/svg%3E" alt="Analytics" class="feature-screenshot">
+                <p>부서별 비교, 월별 추이, 감정 분포, 주간 변화 등 다각도 분석</p>
+                <div class="feature-tech-tags">
+                  <span class="tech-tag">6종 차트</span>
+                  <span class="tech-tag">인터랙티브</span>
+                  <span class="tech-tag">인사이트</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="feature-demo-card">
+              <div class="feature-demo-header">
+                <h3>📝 리포트 생성</h3>
+                <span class="feature-badge">Report</span>
+              </div>
+              <div class="feature-demo-body">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%231a1f2e' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' fill='%238e9aaf' font-size='20' text-anchor='middle' dominant-baseline='middle'%3E리포트 스크린샷%3C/text%3E%3C/svg%3E" alt="Reports" class="feature-screenshot">
+                <p>주간/월간/분기/위험 분석 리포트 자동 생성 및 이력 관리</p>
+                <div class="feature-tech-tags">
+                  <span class="tech-tag">자동 생성</span>
+                  <span class="tech-tag">4종 리포트</span>
+                  <span class="tech-tag">PDF 저장</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 워크플로우 탭 -->
+        <div id="workflow-preview" class="preview-content">
+          <div class="preview-section">
+            <h2>🔄 완전한 케어 워크플로우</h2>
+            <div class="workflow-diagram">
+              <div class="workflow-step">
+                <div class="workflow-number">1</div>
+                <div class="workflow-icon">📊</div>
+                <h3>감정 모니터링</h3>
+                <p>케어 인력의 일상적인 감정 데이터를 수집하고 분석합니다.</p>
+                <div class="workflow-details">
+                  <span class="detail-tag">감정 로그 기록</span>
+                  <span class="detail-tag">실시간 분석</span>
+                  <span class="detail-tag">패턴 감지</span>
+                </div>
+              </div>
+
+              <div class="workflow-arrow">➜</div>
+
+              <div class="workflow-step">
+                <div class="workflow-number">2</div>
+                <div class="workflow-icon">🔔</div>
+                <h3>조기 경보</h3>
+                <p>부정 감정 증가나 번아웃 위험도 상승 시 즉시 알림을 발생시킵니다.</p>
+                <div class="workflow-details">
+                  <span class="detail-tag alert">위험도 72% 이상</span>
+                  <span class="detail-tag">실시간 알림</span>
+                  <span class="detail-tag">우선순위 분류</span>
+                </div>
+              </div>
+
+              <div class="workflow-arrow">➜</div>
+
+              <div class="workflow-step highlight">
+                <div class="workflow-number">3</div>
+                <div class="workflow-icon">🧠</div>
+                <h3>자동 연계</h3>
+                <p>고위험군을 자동으로 감지하여 가용한 상담사와 즉시 매칭합니다.</p>
+                <div class="workflow-details">
+                  <span class="detail-tag new">자동 매칭</span>
+                  <span class="detail-tag">24시간 내 예약</span>
+                  <span class="detail-tag">긴급 우선처리</span>
+                </div>
+              </div>
+
+              <div class="workflow-arrow">➜</div>
+
+              <div class="workflow-step">
+                <div class="workflow-number">4</div>
+                <div class="workflow-icon">💬</div>
+                <h3>상담 진행</h3>
+                <p>전문 상담사가 개입하여 심리 상담을 진행합니다.</p>
+                <div class="workflow-details">
+                  <span class="detail-tag">전문 상담</span>
+                  <span class="detail-tag">세션 관리</span>
+                  <span class="detail-tag">실시간 기록</span>
+                </div>
+              </div>
+
+              <div class="workflow-arrow">➜</div>
+
+              <div class="workflow-step">
+                <div class="workflow-number">5</div>
+                <div class="workflow-icon">📝</div>
+                <h3>결과 기록</h3>
+                <p>상담 결과와 후속 조치를 상세히 기록합니다.</p>
+                <div class="workflow-details">
+                  <span class="detail-tag">상담 결과</span>
+                  <span class="detail-tag">후속 일정</span>
+                  <span class="detail-tag">이력 저장</span>
+                </div>
+              </div>
+
+              <div class="workflow-arrow">➜</div>
+
+              <div class="workflow-step">
+                <div class="workflow-number">6</div>
+                <div class="workflow-icon">🔍</div>
+                <h3>지속 모니터링</h3>
+                <p>개입 효과를 추적하고 필요시 재개입합니다.</p>
+                <div class="workflow-details">
+                  <span class="detail-tag">효과 측정</span>
+                  <span class="detail-tag">재평가</span>
+                  <span class="detail-tag">지속 관리</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-section">
+            <h2>⚡ 핵심 가치</h2>
+            <div class="value-props">
+              <div class="value-card">
+                <div class="value-icon">🎯</div>
+                <h3>예방적 개입</h3>
+                <p>"위기가 되기 전에 감지"하여 조기에 개입함으로써 번아웃을 사전에 방지합니다.</p>
+              </div>
+              <div class="value-card">
+                <div class="value-icon">💰</div>
+                <h3>운영 비용 절감</h3>
+                <p>감정 리스크 감소는 이직률 감소로 이어지며, 결과적으로 운영 비용을 크게 절감합니다.</p>
+              </div>
+              <div class="value-card">
+                <div class="value-icon">📊</div>
+                <h3>데이터 기반 의사결정</h3>
+                <p>감정을 측정 가능한 데이터로 전환하여 관리하고, 관리하면 개선할 수 있습니다.</p>
+              </div>
+              <div class="value-card">
+                <div class="value-icon">🔄</div>
+                <h3>완전한 사이클</h3>
+                <p>감지부터 개입, 추적까지 완전한 케어 사이클을 자동화하여 지속 가능한 케어 환경을 구축합니다.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 데모 시나리오 탭 -->
+        <div id="demo-preview" class="preview-content">
+          <div class="preview-section">
+            <h2>🎯 5분 데모 시나리오</h2>
+            
+            <div class="demo-timeline">
+              <div class="demo-step">
+                <div class="demo-time">0:00 - 0:30</div>
+                <div class="demo-content">
+                  <h3>1️⃣ 오프닝 (30초)</h3>
+                  <div class="demo-script">
+                    <p class="demo-line">"안녕하세요. GOYO 감정 운영 인텔리전스 시스템입니다."</p>
+                    <p class="demo-line">"케어 현장에서 가장 큰 문제는 무엇일까요?"</p>
+                    <p class="demo-line strong">"바로 <span class="highlight">번아웃의 늦은 발견</span>과 <span class="highlight">사후 대응</span>입니다."</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="demo-step">
+                <div class="demo-time">0:30 - 1:30</div>
+                <div class="demo-content">
+                  <h3>2️⃣ 문제 인식 (1분)</h3>
+                  <div class="demo-script">
+                    <p class="demo-line">"현재 케어 현장에서는..."</p>
+                    <ul class="demo-list">
+                      <li>감정 변화를 감지하기 어렵습니다</li>
+                      <li>사건 발생 후에야 대응합니다</li>
+                      <li>의사결정에 감정 데이터가 부족합니다</li>
+                    </ul>
+                    <p class="demo-line strong">"GOYO는 이 모든 문제를 해결합니다."</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="demo-step highlight">
+                <div class="demo-time">1:30 - 3:30</div>
+                <div class="demo-content">
+                  <h3>3️⃣ 솔루션 제시 (2분)</h3>
+                  <div class="demo-actions">
+                    <div class="action-item">
+                      <strong>➡️ 대시보드 표시</strong>
+                      <p>"실시간으로 8명 케어 인력의 감정 상태를 모니터링합니다."</p>
+                    </div>
+                    <div class="action-item">
+                      <strong>➡️ 알림 클릭</strong>
+                      <p>"김미영님의 부정 감정이 85% 증가, 번아웃 위험도 72%입니다."</p>
+                    </div>
+                    <div class="action-item">
+                      <strong>➡️ 개입 방안 표시</strong>
+                      <p>"시스템이 4단계 개입 방안을 자동으로 제시합니다."</p>
+                    </div>
+                    <div class="action-item new">
+                      <strong>➡️ 상담 연계 탭 이동</strong>
+                      <p>"고위험군을 자동 감지하여 전문 상담사와 즉시 연계했습니다."</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="demo-step">
+                <div class="demo-time">3:30 - 4:30</div>
+                <div class="demo-content">
+                  <h3>4️⃣ 데이터 근거 (1분)</h3>
+                  <div class="demo-script">
+                    <p class="demo-line">"데이터 분석 탭으로 이동합니다."</p>
+                    <ul class="demo-list">
+                      <li>📊 부서별 감정 상태 비교 차트</li>
+                      <li>📈 월별 번아웃 추이 분석</li>
+                      <li>🎯 감정 유형별 분포 시각화</li>
+                    </ul>
+                    <p class="demo-line strong">"감정을 측정하면 관리할 수 있고, 관리하면 개선할 수 있습니다."</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="demo-step">
+                <div class="demo-time">4:30 - 5:00</div>
+                <div class="demo-content">
+                  <h3>5️⃣ 클로징 (30초)</h3>
+                  <div class="demo-script">
+                    <p class="demo-line strong highlight">"GOYO는 감지 → 경보 → 연계 → 개입 → 추적의 완전한 케어 사이클을 제공합니다."</p>
+                    <p class="demo-line">"감정 리스크 감소는 이직률 감소로 이어지고,"</p>
+                    <p class="demo-line">"결과적으로 <span class="highlight">운영 비용을 절감</span>합니다."</p>
+                    <p class="demo-line strong">"GOYO는 미래 케어 조직의 Emotional Operations Layer입니다."</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-section">
+            <h2>✅ 시연 체크리스트</h2>
+            <div class="checklist-grid">
+              <div class="checklist-card">
+                <h4>🔧 기술 체크</h4>
+                <ul class="checklist">
+                  <li>✓ 인터넷 연결 확인</li>
+                  <li>✓ 애플리케이션 정상 작동</li>
+                  <li>✓ 모든 뷰 로딩 테스트</li>
+                  <li>✓ 차트 렌더링 확인</li>
+                  <li>✓ 데이터베이스 초기화</li>
+                </ul>
+              </div>
+              <div class="checklist-card">
+                <h4>🎬 시연 준비</h4>
+                <ul class="checklist">
+                  <li>✓ 대시보드에서 시작</li>
+                  <li>✓ 김미영 고위험 케이스 준비</li>
+                  <li>✓ 상담 연계 예제 확인</li>
+                  <li>✓ 차트 데이터 확인</li>
+                  <li>✓ 타이밍 연습 (5분)</li>
+                </ul>
+              </div>
+              <div class="checklist-card">
+                <h4>💬 강조 포인트</h4>
+                <ul class="checklist">
+                  <li>✓ "위기 전 감지"</li>
+                  <li>✓ "자동 연계" (NEW)</li>
+                  <li>✓ "완전한 사이클"</li>
+                  <li>✓ "운영 비용 절감"</li>
+                  <li>✓ "데이터 기반 결정"</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
