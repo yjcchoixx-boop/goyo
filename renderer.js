@@ -2203,3 +2203,295 @@ loadDataCollectionView = async function() {
   setupAutoCollection();
 };
 
+
+// ============================================
+// 얼굴 인식 체크인 시스템
+// ============================================
+
+let selfCameraStream = null;
+let selfCapturedImage = null;
+
+function setupFacialCheckin() {
+  const startCameraBtn = document.getElementById('self-start-camera');
+  const captureBtn = document.getElementById('self-capture-photo');
+  const analyzeBtn = document.getElementById('self-analyze-face');
+  const retakeBtn = document.getElementById('self-retake-photo');
+  
+  if (startCameraBtn) {
+    startCameraBtn.addEventListener('click', startSelfCamera);
+  }
+  
+  if (captureBtn) {
+    captureBtn.addEventListener('click', captureSelfPhoto);
+  }
+  
+  if (analyzeBtn) {
+    analyzeBtn.addEventListener('click', analyzeSelfFace);
+  }
+  
+  if (retakeBtn) {
+    retakeBtn.addEventListener('click', retakeSelfPhoto);
+  }
+}
+
+async function startSelfCamera() {
+  try {
+    const video = document.getElementById('self-camera-video');
+    const preview = document.getElementById('self-camera-preview');
+    const startBtn = document.getElementById('self-start-camera');
+    const captureBtn = document.getElementById('self-capture-photo');
+    
+    // 카메라 권한 요청 및 스트림 가져오기
+    selfCameraStream = await navigator.mediaDevices.getUserMedia({ 
+      video: { 
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        facingMode: 'user'
+      } 
+    });
+    
+    video.srcObject = selfCameraStream;
+    video.style.display = 'block';
+    preview.style.display = 'none';
+    
+    // 버튼 상태 변경
+    startBtn.style.display = 'none';
+    captureBtn.style.display = 'inline-block';
+    
+    showNotification('카메라가 시작되었습니다', 'success');
+    
+  } catch (error) {
+    console.error('카메라 접근 실패:', error);
+    
+    let errorMsg = '카메라 접근이 거부되었습니다.';
+    if (error.name === 'NotFoundError') {
+      errorMsg = '카메라를 찾을 수 없습니다.';
+    } else if (error.name === 'NotAllowedError') {
+      errorMsg = '카메라 권한이 필요합니다. 브라우저 설정에서 카메라를 허용해주세요.';
+    } else if (error.name === 'NotReadableError') {
+      errorMsg = '카메라가 다른 애플리케이션에서 사용 중입니다.';
+    }
+    
+    showNotification(errorMsg, 'error');
+  }
+}
+
+function captureSelfPhoto() {
+  const video = document.getElementById('self-camera-video');
+  const canvas = document.getElementById('self-camera-canvas');
+  const capturedPhoto = document.getElementById('self-captured-photo');
+  const photoPreview = document.getElementById('self-photo-preview');
+  const captureBtn = document.getElementById('self-capture-photo');
+  const analyzeBtn = document.getElementById('self-analyze-face');
+  
+  // 캔버스에 비디오 프레임 그리기
+  const context = canvas.getContext('2d');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  
+  // 이미지 데이터 저장
+  selfCapturedImage = canvas.toDataURL('image/jpeg', 0.9);
+  photoPreview.src = selfCapturedImage;
+  
+  // UI 업데이트
+  video.style.display = 'none';
+  capturedPhoto.style.display = 'block';
+  captureBtn.style.display = 'none';
+  analyzeBtn.style.display = 'inline-block';
+  
+  // 카메라 스트림 중지
+  if (selfCameraStream) {
+    selfCameraStream.getTracks().forEach(track => track.stop());
+    selfCameraStream = null;
+  }
+  
+  showNotification('사진이 촬영되었습니다', 'success');
+}
+
+function retakeSelfPhoto() {
+  const video = document.getElementById('self-camera-video');
+  const capturedPhoto = document.getElementById('self-captured-photo');
+  const analysisResult = document.getElementById('self-analysis-result');
+  const startBtn = document.getElementById('self-start-camera');
+  const analyzeBtn = document.getElementById('self-analyze-face');
+  
+  // UI 초기화
+  video.style.display = 'none';
+  capturedPhoto.style.display = 'none';
+  analysisResult.style.display = 'none';
+  startBtn.style.display = 'inline-block';
+  analyzeBtn.style.display = 'none';
+  
+  // 데이터 초기화
+  selfCapturedImage = null;
+  
+  // 카메라 미리보기 다시 표시
+  const preview = document.getElementById('self-camera-preview');
+  preview.style.display = 'flex';
+  
+  showNotification('다시 촬영할 수 있습니다', 'info');
+}
+
+async function analyzeSelfFace() {
+  if (!selfCapturedImage) {
+    showNotification('먼저 사진을 촬영해주세요', 'warning');
+    return;
+  }
+  
+  const analyzeBtn = document.getElementById('self-analyze-face');
+  const analysisResult = document.getElementById('self-analysis-result');
+  const capturedPhoto = document.getElementById('self-captured-photo');
+  
+  try {
+    // 분석 중 표시
+    analyzeBtn.disabled = true;
+    analyzeBtn.textContent = '🤖 분석 중...';
+    capturedPhoto.classList.add('analyzing');
+    
+    // AI 감정 분석 시뮬레이션 (실제로는 AI API 호출)
+    await new Promise(resolve => setTimeout(resolve, 2000)); // 2초 지연
+    
+    // 랜덤 감정 분석 결과 생성 (데모용)
+    const emotions = [
+      { type: '긍정적', emoji: '😊', confidence: 85 + Math.floor(Math.random() * 15) },
+      { type: '만족', emoji: '🙂', confidence: 80 + Math.floor(Math.random() * 15) },
+      { type: '중립적', emoji: '😐', confidence: 75 + Math.floor(Math.random() * 15) },
+      { type: '피로', emoji: '😓', confidence: 70 + Math.floor(Math.random() * 20) },
+      { type: '스트레스', emoji: '😰', confidence: 65 + Math.floor(Math.random() * 20) },
+      { type: '부정적', emoji: '😢', confidence: 60 + Math.floor(Math.random() * 25) }
+    ];
+    
+    const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
+    
+    // 감정에 따른 강도 계산
+    const intensityMap = {
+      '긍정적': 8 + Math.floor(Math.random() * 3),
+      '만족': 7 + Math.floor(Math.random() * 2),
+      '중립적': 5 + Math.floor(Math.random() * 2),
+      '피로': 4 + Math.floor(Math.random() * 3),
+      '스트레스': 6 + Math.floor(Math.random() * 3),
+      '부정적': 7 + Math.floor(Math.random() * 3)
+    };
+    
+    const detectedIntensity = intensityMap[randomEmotion.type];
+    
+    // 상세 분석 데이터 생성
+    const analysisData = {
+      emotion: randomEmotion.type,
+      emoji: randomEmotion.emoji,
+      confidence: randomEmotion.confidence,
+      intensity: detectedIntensity,
+      happiness: Math.floor(Math.random() * 100),
+      stress: Math.floor(Math.random() * 100),
+      fatigue: Math.floor(Math.random() * 100),
+      engagement: Math.floor(Math.random() * 100)
+    };
+    
+    // 결과 표시
+    displayAnalysisResult(analysisData);
+    
+    // 감정 선택 자동 설정
+    autoSelectEmotion(randomEmotion.type, detectedIntensity);
+    
+    // UI 업데이트
+    capturedPhoto.classList.remove('analyzing');
+    analyzeBtn.style.display = 'none';
+    analysisResult.style.display = 'block';
+    
+    showNotification('AI 감정 분석이 완료되었습니다!', 'success');
+    
+  } catch (error) {
+    console.error('감정 분석 실패:', error);
+    showNotification('감정 분석에 실패했습니다', 'error');
+    analyzeBtn.disabled = false;
+    analyzeBtn.textContent = '🤖 AI 감정 분석';
+    capturedPhoto.classList.remove('analyzing');
+  }
+}
+
+function displayAnalysisResult(data) {
+  const detectedEmoji = document.getElementById('self-detected-emoji');
+  const detectedEmotion = document.getElementById('self-detected-emotion');
+  const confidence = document.getElementById('self-confidence');
+  const analysisDetails = document.getElementById('self-analysis-details');
+  
+  // 주요 결과 표시
+  detectedEmoji.textContent = data.emoji;
+  detectedEmotion.textContent = data.emotion;
+  confidence.textContent = data.confidence;
+  
+  // 상세 분석 결과 표시
+  analysisDetails.innerHTML = `
+    <div class="detail-item">
+      <div class="detail-label">행복도</div>
+      <div class="detail-value">${data.happiness}%</div>
+      <div class="detail-bar">
+        <div class="detail-fill" style="width: ${data.happiness}%"></div>
+      </div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">스트레스</div>
+      <div class="detail-value">${data.stress}%</div>
+      <div class="detail-bar">
+        <div class="detail-fill" style="width: ${data.stress}%"></div>
+      </div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">피로도</div>
+      <div class="detail-value">${data.fatigue}%</div>
+      <div class="detail-bar">
+        <div class="detail-fill" style="width: ${data.fatigue}%"></div>
+      </div>
+    </div>
+    <div class="detail-item">
+      <div class="detail-label">집중도</div>
+      <div class="detail-value">${data.engagement}%</div>
+      <div class="detail-bar">
+        <div class="detail-fill" style="width: ${data.engagement}%"></div>
+      </div>
+    </div>
+  `;
+}
+
+function autoSelectEmotion(emotionType, intensity) {
+  // 감정 라디오 버튼 자동 선택
+  const emotionInputs = document.querySelectorAll('input[name="emotion"]');
+  emotionInputs.forEach(input => {
+    if (input.value === emotionType) {
+      input.checked = true;
+      input.parentElement.classList.add('selected');
+    } else {
+      input.parentElement.classList.remove('selected');
+    }
+  });
+  
+  // 강도 슬라이더 자동 설정
+  const intensitySlider = document.getElementById('self-intensity');
+  const intensityValue = document.getElementById('intensity-value');
+  if (intensitySlider && intensityValue) {
+    intensitySlider.value = intensity;
+    intensityValue.textContent = intensity;
+  }
+  
+  // 메모 자동 추가
+  const notesTextarea = document.getElementById('self-notes');
+  if (notesTextarea) {
+    notesTextarea.value = `AI 얼굴 인식 자동 체크인 - ${new Date().toLocaleString('ko-KR')}`;
+  }
+}
+
+// 데이터 수집 뷰 로드 시 얼굴 인식 초기화
+const originalLoadDataCollectionView2 = loadDataCollectionView;
+loadDataCollectionView = async function() {
+  await originalLoadDataCollectionView2();
+  setupFacialCheckin();
+};
+
+// 페이지 언로드 시 카메라 스트림 정리
+window.addEventListener('beforeunload', () => {
+  if (selfCameraStream) {
+    selfCameraStream.getTracks().forEach(track => track.stop());
+  }
+});
+

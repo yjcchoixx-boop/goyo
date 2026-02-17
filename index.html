@@ -1049,6 +1049,80 @@
                 <textarea id="self-notes" rows="3" placeholder="오늘 특별히 기록하고 싶은 내용이 있나요?"></textarea>
               </div>
 
+              <!-- 얼굴 인식 체크인 섹션 -->
+              <div class="facial-checkin-section">
+                <div class="section-divider">
+                  <span>또는</span>
+                </div>
+
+                <div class="facial-option-card">
+                  <div class="facial-header">
+                    <h4>📸 얼굴 인식 자동 체크인</h4>
+                    <span class="badge badge-new">AI</span>
+                  </div>
+                  <p class="facial-desc">카메라로 얼굴을 촬영하면 AI가 자동으로 감정을 분석합니다</p>
+                  
+                  <div class="camera-container">
+                    <video id="self-camera-video" autoplay playsinline></video>
+                    <canvas id="self-camera-canvas" style="display: none;"></canvas>
+                    
+                    <div id="self-camera-preview" class="camera-preview">
+                      <div class="camera-placeholder">
+                        <div class="camera-icon">📷</div>
+                        <p>카메라로 얼굴을 촬영하세요</p>
+                        <small>AI가 자동으로 감정을 분석합니다</small>
+                      </div>
+                    </div>
+
+                    <div id="self-captured-photo" class="captured-photo" style="display: none;">
+                      <img id="self-photo-preview" src="" alt="촬영된 사진">
+                      <div class="photo-overlay">
+                        <button type="button" class="btn-icon btn-retake" id="self-retake-photo" title="다시 촬영">
+                          🔄
+                        </button>
+                      </div>
+                    </div>
+
+                    <div id="self-analysis-result" class="analysis-result" style="display: none;">
+                      <div class="analysis-header">
+                        <span class="analysis-icon">🤖</span>
+                        <strong>AI 감정 분석 결과</strong>
+                      </div>
+                      <div class="analysis-content">
+                        <div class="detected-emotion">
+                          <span class="emotion-emoji-large" id="self-detected-emoji">😊</span>
+                          <div class="emotion-info">
+                            <div class="emotion-name" id="self-detected-emotion">긍정적</div>
+                            <div class="emotion-confidence">
+                              신뢰도: <span id="self-confidence">95</span>%
+                            </div>
+                          </div>
+                        </div>
+                        <div class="analysis-details" id="self-analysis-details">
+                          <!-- 감정 분석 상세 정보 -->
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="camera-controls">
+                    <button type="button" class="btn btn-secondary" id="self-start-camera">
+                      📷 카메라 시작
+                    </button>
+                    <button type="button" class="btn btn-primary" id="self-capture-photo" style="display: none;">
+                      📸 사진 촬영
+                    </button>
+                    <button type="button" class="btn btn-success" id="self-analyze-face" style="display: none;">
+                      🤖 AI 감정 분석
+                    </button>
+                  </div>
+
+                  <div class="facial-info">
+                    <small>💡 <strong>개인정보 보호:</strong> 촬영된 사진은 감정 분석 후 즉시 삭제되며, 감정 데이터만 저장됩니다.</small>
+                  </div>
+                </div>
+              </div>
+
               <div class="form-actions">
                 <button type="submit" class="btn btn-primary btn-large">
                   ✅ 체크인 완료
