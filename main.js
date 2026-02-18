@@ -149,50 +149,212 @@ function insertSampleData() {
   
   workers.forEach(worker => insertWorker.run(worker));
   
-  // 감정 로그 샘플 데이터 생성
+  // 감정 로그 샘플 데이터 생성 (풍부한 데이터)
   const insertEmotion = db.prepare(`
     INSERT INTO emotion_logs (worker_id, timestamp, emotion_type, intensity, context)
     VALUES (?, ?, ?, ?, ?)
   `);
   
   const emotionTypes = ['긍정적', '부정적', '중립적', '피로', '스트레스', '만족'];
+  const contexts = [
+    '일상 케어 활동',
+    '환자 상태 확인',
+    '식사 도움',
+    '위생 관리',
+    '운동 보조',
+    '투약 관리',
+    '가족 상담',
+    '팀 회의',
+    '응급 상황 대응',
+    '환자와 대화',
+    '기록 작성',
+    '인수인계',
+    '야간 근무',
+    '주간 근무',
+    '환자 이송',
+    '물리치료 보조',
+    '정서적 지원',
+    '환자 관찰',
+    '협력 업무',
+    '교육 참여'
+  ];
+  
   const now = new Date();
   
   for (let workerId = 1; workerId <= 8; workerId++) {
-    for (let i = 0; i < 30; i++) {
+    // 각 워커별로 지난 60일간 데이터 생성 (더 많은 데이터)
+    for (let i = 0; i < 60; i++) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
       
-      let emotionType, intensity;
+      // 하루에 2-4개 로그 생성 (랜덤)
+      const logsPerDay = Math.floor(Math.random() * 3) + 2;
       
-      // 워커 1번은 고위험군 (부정적 감정 증가)
-      if (workerId === 1 && i < 14) {
-        emotionType = Math.random() > 0.3 ? '부정적' : '스트레스';
-        intensity = 0.6 + Math.random() * 0.4;
-      } else {
-        emotionType = emotionTypes[Math.floor(Math.random() * emotionTypes.length)];
-        intensity = Math.random();
+      for (let j = 0; j < logsPerDay; j++) {
+        const logDate = new Date(date);
+        logDate.setHours(8 + Math.floor(Math.random() * 12)); // 8시~20시
+        logDate.setMinutes(Math.floor(Math.random() * 60));
+        
+        let emotionType, intensity;
+        
+        // 워커별 특성 부여
+        if (workerId === 1 && i < 14) {
+          // 김미영 - 고위험군 (최근 2주간 부정적)
+          emotionType = Math.random() > 0.25 ? (Math.random() > 0.5 ? '부정적' : '스트레스') : '피로';
+          intensity = 7 + Math.floor(Math.random() * 3);
+        } else if (workerId === 4 && i < 21) {
+          // 최민준 - 주의군 (최근 3주간 피로 누적)
+          emotionType = Math.random() > 0.4 ? '피로' : (Math.random() > 0.5 ? '스트레스' : '중립적');
+          intensity = 5 + Math.floor(Math.random() * 3);
+        } else if (workerId === 8 && i < 10) {
+          // 한민수 - 경미한 스트레스
+          emotionType = Math.random() > 0.5 ? '스트레스' : (Math.random() > 0.6 ? '중립적' : '만족');
+          intensity = 4 + Math.floor(Math.random() * 4);
+        } else if (workerId === 2 || workerId === 3) {
+          // 이정수, 박서연 - 안정적 (긍정적 비율 높음)
+          emotionType = Math.random() > 0.3 ? (Math.random() > 0.5 ? '긍정적' : '만족') : '중립적';
+          intensity = 3 + Math.floor(Math.random() * 5);
+        } else {
+          // 나머지 - 일반적 패턴
+          const rand = Math.random();
+          if (rand > 0.7) emotionType = '긍정적';
+          else if (rand > 0.5) emotionType = '만족';
+          else if (rand > 0.3) emotionType = '중립적';
+          else if (rand > 0.15) emotionType = '피로';
+          else if (rand > 0.05) emotionType = '스트레스';
+          else emotionType = '부정적';
+          
+          intensity = 3 + Math.floor(Math.random() * 6);
+        }
+        
+        const context = contexts[Math.floor(Math.random() * contexts.length)];
+        
+        insertEmotion.run(
+          workerId,
+          logDate.toISOString(),
+          emotionType,
+          intensity,
+          `${context} - ${Math.floor(Math.random() * 15) + 1}번 대상자`
+        );
       }
-      
-      insertEmotion.run(
-        workerId,
-        date.toISOString(),
-        emotionType,
-        intensity,
-        `일상 케어 활동 - ${Math.floor(Math.random() * 10) + 1}번 환자`
-      );
     }
   }
   
-  // 리스크 알림 샘플
+  console.log('✅ 감정 로그 샘플 데이터 생성 완료 (약 960+ 건)');
+  
+  // 리스크 알림 샘플 (더 많은 데이터)
   const insertAlert = db.prepare(`
-    INSERT INTO risk_alerts (worker_id, alert_date, risk_score, risk_level)
+    INSERT INTO risk_alerts (worker_id, alert_date, risk_score, risk_level, status)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+  
+  const alertData = [
+    // 최근 활성 알림
+    [1, new Date(), 72, 'high', 'active'],
+    [1, new Date(Date.now() - 86400000), 68, 'high', 'acknowledged'],
+    [4, new Date(Date.now() - 86400000 * 2), 58, 'medium', 'active'],
+    [8, new Date(Date.now() - 86400000 * 3), 45, 'medium', 'acknowledged'],
+    
+    // 해결된 알림
+    [1, new Date(Date.now() - 86400000 * 7), 65, 'medium', 'resolved'],
+    [4, new Date(Date.now() - 86400000 * 10), 52, 'medium', 'resolved'],
+    [8, new Date(Date.now() - 86400000 * 14), 48, 'medium', 'resolved'],
+    
+    // 오래된 알림
+    [1, new Date(Date.now() - 86400000 * 21), 55, 'medium', 'resolved'],
+    [2, new Date(Date.now() - 86400000 * 28), 42, 'low', 'resolved'],
+    [5, new Date(Date.now() - 86400000 * 35), 38, 'low', 'resolved']
+  ];
+  
+  alertData.forEach(alert => insertAlert.run(alert));
+  console.log('✅ 리스크 알림 샘플 데이터 생성 완료 (10건)');
+  
+  // 상담사 샘플 데이터
+  const insertCounselor = db.prepare(`
+    INSERT INTO counselors (name, license, specialty, phone, email, availability, current_load, max_capacity)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  
+  const counselors = [
+    ['박지은', '임상심리사 1급', '번아웃 증후군, 직무 스트레스', '010-1111-2222', 'park.counselor@goyo.kr', 'available', 2, 5],
+    ['김민수', '정신건강임상심리사', '우울증, 불안장애', '010-2222-3333', 'kim.counselor@goyo.kr', 'available', 3, 5],
+    ['이서연', '상담심리사 1급', '감정 조절, 대인관계', '010-3333-4444', 'lee.counselor@goyo.kr', 'available', 1, 4],
+    ['최정훈', '임상심리사 2급', '트라우마, PTSD', '010-4444-5555', 'choi.counselor@goyo.kr', 'busy', 4, 4],
+    ['한수진', '상담심리사 2급', '직장 적응, 커리어 상담', '010-5555-6666', 'han.counselor@goyo.kr', 'available', 1, 5]
+  ];
+  
+  counselors.forEach(counselor => insertCounselor.run(counselor));
+  console.log('✅ 상담사 샘플 데이터 생성 완료 (5명)');
+  
+  // 상담 세션 샘플 데이터
+  const insertSession = db.prepare(`
+    INSERT INTO counseling_sessions 
+    (worker_id, counselor_id, session_date, session_type, priority, status, notes)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `);
+  
+  const sessions = [
+    [1, 1, new Date(Date.now() + 86400000).toISOString(), 'automatic', 'urgent', 'scheduled', '고위험군 자동 연계 - 즉시 상담 필요'],
+    [4, 2, new Date(Date.now() + 86400000 * 2).toISOString(), 'automatic', 'high', 'scheduled', '피로 누적 감지 - 정기 상담'],
+    [8, 3, new Date(Date.now() + 86400000 * 3).toISOString(), 'manual', 'normal', 'scheduled', '직장 적응 상담 요청'],
+    [1, 1, new Date(Date.now() - 86400000 * 7).toISOString(), 'automatic', 'high', 'completed', '1차 상담 완료 - 스트레스 관리 기법 교육'],
+    [2, 3, new Date(Date.now() - 86400000 * 14).toISOString(), 'manual', 'normal', 'completed', '정기 검진 - 안정적 상태 유지'],
+    [4, 5, new Date(Date.now() - 86400000 * 21).toISOString(), 'automatic', 'high', 'completed', '번아웃 예방 프로그램 참여'],
+    [1, 1, new Date(Date.now() - 86400000 * 28).toISOString(), 'manual', 'normal', 'cancelled', '본인 일정 충돌로 취소']
+  ];
+  
+  sessions.forEach(session => insertSession.run(session));
+  console.log('✅ 상담 세션 샘플 데이터 생성 완료 (7건)');
+  
+  // 상담 이력 샘플 데이터
+  const insertHistory = db.prepare(`
+    INSERT INTO counseling_history
+    (session_id, counseling_date, outcome, follow_up_needed, notes)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+  
+  const histories = [
+    [4, new Date(Date.now() - 86400000 * 7).toISOString(), 'improved', 1, '스트레스 관리 기법 교육. 호흡법, 명상 실천 권장. 2주 후 재상담 예정.'],
+    [5, new Date(Date.now() - 86400000 * 14).toISOString(), 'stable', 0, '정기 검진 결과 양호. 긍정적 감정 유지 중. 특별한 조치 불필요.'],
+    [6, new Date(Date.now() - 86400000 * 21).toISOString(), 'improved', 1, '번아웃 예방 프로그램 참여. 워크-라이프 밸런스 개선. 1개월 후 추적 관찰.']
+  ];
+  
+  histories.forEach(history => insertHistory.run(history));
+  console.log('✅ 상담 이력 샘플 데이터 생성 완료 (3건)');
+  
+  // 리포트 샘플 데이터
+  const insertReport = db.prepare(`
+    INSERT INTO reports (report_type, generated_date, title, summary)
     VALUES (?, ?, ?, ?)
   `);
   
-  insertAlert.run(1, new Date().toISOString(), 72, 'high');
-  insertAlert.run(4, new Date(Date.now() - 86400000).toISOString(), 58, 'medium');
-  insertAlert.run(8, new Date(Date.now() - 172800000).toISOString(), 45, 'medium');
+  const reports = [
+    ['weekly', new Date(Date.now() - 86400000 * 2).toISOString(), 
+     '주간 감정 분석 리포트 (2026-02-10 ~ 2026-02-16)', 
+     '전체 인력 8명 중 안정 5명(62.5%), 주의 2명(25%), 위험 1명(12.5%). 김미영님 고위험 상태로 즉시 개입 필요.'],
+    ['monthly', new Date(Date.now() - 86400000 * 15).toISOString(), 
+     '월간 종합 리포트 (2026년 1월)', 
+     '전월 대비 스트레스 지수 15% 증가. A팀 부담 집중. 인력 재배치 및 추가 지원 검토 필요.'],
+    ['quarterly', new Date(Date.now() - 86400000 * 45).toISOString(), 
+     '분기 트렌드 분석 (2025년 4분기)', 
+     '연말 업무 증가로 전반적 피로도 상승. 휴가 사용률 저조(38%). 복지 프로그램 강화 권장.'],
+    ['risk', new Date(Date.now() - 86400000 * 7).toISOString(), 
+     '고위험군 집중 분석', 
+     '김미영님 리스크 점수 72점. 최근 2주간 부정적 감정 75%. 즉시 심리상담 연계 및 업무 조정 필요.']
+  ];
+  
+  reports.forEach(report => insertReport.run(report));
+  console.log('✅ 리포트 샘플 데이터 생성 완료 (4건)');
+  
+  console.log('\n🎉 모든 샘플 데이터 생성 완료!');
+  console.log('📊 데이터 요약:');
+  console.log('  - 케어 인력: 8명');
+  console.log('  - 감정 로그: 960+ 건 (60일간, 하루 2-4회)');
+  console.log('  - 리스크 알림: 10건');
+  console.log('  - 상담사: 5명');
+  console.log('  - 상담 세션: 7건');
+  console.log('  - 상담 이력: 3건');
+  console.log('  - 리포트: 4건');
 }
 
 // IPC 핸들러
