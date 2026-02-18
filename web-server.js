@@ -160,6 +160,23 @@ app.get('/api/statistics', (req, res) => {
   }
 });
 
+// 대시보드 통계 (상세)
+app.get('/api/dashboard-stats', (req, res) => {
+  try {
+    const stats = {
+      totalWorkers: db.prepare("SELECT COUNT(*) as count FROM care_workers WHERE status = 'active'").get().count,
+      normalWorkers: db.prepare("SELECT COUNT(*) as count FROM care_workers WHERE risk_status = 'normal' AND status = 'active'").get().count,
+      warningWorkers: db.prepare("SELECT COUNT(*) as count FROM care_workers WHERE risk_status IN ('medium', 'warning') AND status = 'active'").get().count,
+      criticalWorkers: db.prepare("SELECT COUNT(*) as count FROM care_workers WHERE risk_status IN ('high', 'critical') AND status = 'active'").get().count,
+      averageIntensity: db.prepare("SELECT COALESCE(AVG(intensity), 0) as avg FROM emotion_logs WHERE timestamp >= datetime('now', '-7 days')").get().avg.toFixed(1)
+    };
+    res.json(stats);
+  } catch (error) {
+    console.error('대시보드 통계 조회 실패:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // 메인 페이지
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
