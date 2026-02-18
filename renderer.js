@@ -2799,10 +2799,10 @@ function setupFunctionTests() {
   }
 }
 
-// 미리보기 뷰 로드 시 초기화
-const originalLoadPreviewView = loadPreviewView;
+// 미리보기 뷰 로드 시 초기화 (라이브 프리뷰)
+const originalLoadPreviewViewForLive = loadPreviewView;
 loadPreviewView = function() {
-  originalLoadPreviewView();
+  setupPreviewTabs(); // 탭 활성화 설정
   setupLivePreview();
   setupFunctionTests();
 };
@@ -3250,12 +3250,15 @@ function formatUptime(seconds) {
   }
 }
 
-// 미리보기 뷰 로더 확장
-const originalLoadPreviewView = window.loadPreviewView;
-window.loadPreviewView = function() {
-  if (originalLoadPreviewView) {
-    originalLoadPreviewView();
-  }
+// 미리보기 뷰 로더 확장 (실시간 모니터)
+const originalLoadPreviewViewForRealtime = loadPreviewView;
+window.loadPreviewView = loadPreviewView = function() {
+  // 기본 미리보기 탭 설정
+  setupPreviewTabs();
+  
+  // 라이브 프리뷰 설정
+  setupLivePreview();
+  setupFunctionTests();
   
   // 실시간 모니터 초기화
   setTimeout(() => {
