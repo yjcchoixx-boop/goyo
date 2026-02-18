@@ -2495,3 +2495,771 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
+
+// ============================================
+// 라이브 프리뷰 & 테스트 시스템
+// ============================================
+
+function setupLivePreview() {
+  // CSS 라이브 테스트
+  const bgColorInput = document.getElementById('live-bg-color');
+  const textColorInput = document.getElementById('live-text-color');
+  const accentColorInput = document.getElementById('live-accent-color');
+  const fontSizeInput = document.getElementById('live-font-size');
+  const borderRadiusInput = document.getElementById('live-border-radius');
+  const previewBox = document.getElementById('css-preview-box');
+  
+  if (bgColorInput && previewBox) {
+    bgColorInput.addEventListener('input', (e) => {
+      previewBox.style.background = e.target.value;
+    });
+    
+    textColorInput.addEventListener('input', (e) => {
+      previewBox.style.color = e.target.value;
+    });
+    
+    accentColorInput.addEventListener('input', (e) => {
+      const btn = previewBox.querySelector('.btn');
+      if (btn) btn.style.background = e.target.value;
+    });
+    
+    fontSizeInput.addEventListener('input', (e) => {
+      previewBox.style.fontSize = e.target.value + 'px';
+      document.getElementById('font-size-value').textContent = e.target.value + 'px';
+    });
+    
+    borderRadiusInput.addEventListener('input', (e) => {
+      previewBox.style.borderRadius = e.target.value + 'px';
+      document.getElementById('border-radius-value').textContent = e.target.value + 'px';
+    });
+  }
+  
+  // CSS 초기화
+  const resetCssBtn = document.getElementById('reset-css');
+  if (resetCssBtn) {
+    resetCssBtn.addEventListener('click', () => {
+      bgColorInput.value = '#1a1c2e';
+      textColorInput.value = '#e0e1dd';
+      accentColorInput.value = '#4f86ff';
+      fontSizeInput.value = 16;
+      borderRadiusInput.value = 12;
+      
+      previewBox.style.background = '#1a1c2e';
+      previewBox.style.color = '#e0e1dd';
+      previewBox.style.fontSize = '16px';
+      previewBox.style.borderRadius = '12px';
+      
+      const btn = previewBox.querySelector('.btn');
+      if (btn) btn.style.background = '#4f86ff';
+      
+      document.getElementById('font-size-value').textContent = '16px';
+      document.getElementById('border-radius-value').textContent = '12px';
+      
+      showNotification('CSS 설정이 초기화되었습니다', 'info');
+    });
+  }
+  
+  // HTML 라이브 렌더링
+  const htmlInput = document.getElementById('live-html-input');
+  const applyHtmlBtn = document.getElementById('apply-html');
+  const htmlPreview = document.getElementById('html-preview-box');
+  
+  if (applyHtmlBtn && htmlInput && htmlPreview) {
+    const renderHTML = () => {
+      try {
+        htmlPreview.innerHTML = htmlInput.value;
+        showNotification('HTML이 적용되었습니다', 'success');
+      } catch (error) {
+        showNotification('HTML 렌더링 실패: ' + error.message, 'error');
+      }
+    };
+    
+    applyHtmlBtn.addEventListener('click', renderHTML);
+    
+    // 초기 렌더링
+    renderHTML();
+    
+    // 실시간 렌더링 (타이핑 중)
+    htmlInput.addEventListener('input', renderHTML);
+  }
+  
+  // JavaScript 실행
+  const jsInput = document.getElementById('live-js-input');
+  const runJsBtn = document.getElementById('run-js');
+  const jsResult = document.getElementById('js-result');
+  
+  if (runJsBtn && jsInput && jsResult) {
+    runJsBtn.addEventListener('click', () => {
+      try {
+        jsResult.style.color = '#06d6a0';
+        
+        // 콘솔 로그 캡처
+        const logs = [];
+        const originalLog = console.log;
+        console.log = function(...args) {
+          logs.push(args.join(' '));
+          originalLog.apply(console, args);
+        };
+        
+        // 코드 실행
+        const func = new Function(jsInput.value);
+        const result = func();
+        
+        // 콘솔 복원
+        console.log = originalLog;
+        
+        // 결과 표시
+        let output = '';
+        if (logs.length > 0) {
+          output += '📋 Console 출력:\n' + logs.join('\n') + '\n\n';
+        }
+        if (result !== undefined) {
+          output += '✅ 반환 값:\n' + result;
+        }
+        if (output === '') {
+          output = '✅ 코드가 성공적으로 실행되었습니다';
+        }
+        
+        jsResult.textContent = output;
+        
+      } catch (error) {
+        jsResult.style.color = '#e63946';
+        jsResult.textContent = '❌ 에러:\n' + error.message;
+      }
+    });
+  }
+}
+
+// ============================================
+// 기능 테스트 시스템
+// ============================================
+
+function setupFunctionTests() {
+  // 감정 로그 추가 테스트
+  const testAddEmotion = document.getElementById('test-add-emotion');
+  if (testAddEmotion) {
+    testAddEmotion.addEventListener('click', async () => {
+      const result = document.getElementById('data-test-result');
+      result.classList.add('show', 'success');
+      result.textContent = '⏳ 감정 로그 생성 중...';
+      
+      try {
+        const workers = await window.api.invoke('get-workers');
+        if (workers.length === 0) {
+          throw new Error('워커가 없습니다');
+        }
+        
+        const randomWorker = workers[Math.floor(Math.random() * workers.length)];
+        const emotions = ['긍정적', '만족', '중립적', '피로', '스트레스', '부정적'];
+        const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
+        const randomIntensity = Math.floor(Math.random() * 10) + 1;
+        
+        await window.api.invoke('add-emotion-log', {
+          workerId: randomWorker.id,
+          emotionType: randomEmotion,
+          intensity: randomIntensity,
+          notes: '테스트 로그 - ' + new Date().toLocaleTimeString('ko-KR'),
+          timestamp: new Date().toISOString()
+        });
+        
+        result.textContent = `✅ 감정 로그 추가 완료\n워커: ${randomWorker.name}\n감정: ${randomEmotion}\n강도: ${randomIntensity}/10`;
+        showNotification('감정 로그가 추가되었습니다', 'success');
+        
+      } catch (error) {
+        result.classList.remove('success');
+        result.classList.add('error');
+        result.textContent = '❌ 실패: ' + error.message;
+      }
+    });
+  }
+  
+  // 카메라 테스트
+  const testCamera = document.getElementById('test-camera');
+  if (testCamera) {
+    testCamera.addEventListener('click', async () => {
+      const result = document.getElementById('camera-test-result');
+      result.classList.add('show');
+      result.textContent = '⏳ 카메라 권한 확인 중...';
+      
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        stream.getTracks().forEach(track => track.stop());
+        
+        result.classList.add('success');
+        result.textContent = '✅ 카메라 접근 가능\n권한이 허용되었습니다';
+        showNotification('카메라 권한이 확인되었습니다', 'success');
+        
+      } catch (error) {
+        result.classList.add('error');
+        result.textContent = '❌ 카메라 접근 실패\n' + error.message;
+        showNotification('카메라 권한을 확인하세요', 'error');
+      }
+    });
+  }
+  
+  // 차트 테스트
+  const testChart = document.getElementById('test-chart');
+  if (testChart) {
+    testChart.addEventListener('click', () => {
+      const canvas = document.getElementById('test-chart-canvas');
+      canvas.style.display = 'block';
+      
+      if (canvas.chart) {
+        canvas.chart.destroy();
+      }
+      
+      const ctx = canvas.getContext('2d');
+      canvas.chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['월', '화', '수', '목', '금'],
+          datasets: [{
+            label: '테스트 데이터',
+            data: [65, 59, 80, 81, 56],
+            borderColor: '#4f86ff',
+            backgroundColor: 'rgba(79, 134, 255, 0.1)',
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { labels: { color: '#e0e1dd' } }
+          },
+          scales: {
+            y: { ticks: { color: '#8e9aaf' }, grid: { color: '#3a3d5a' } },
+            x: { ticks: { color: '#8e9aaf' }, grid: { color: '#3a3d5a' } }
+          }
+        }
+      });
+      
+      showNotification('차트가 생성되었습니다', 'success');
+    });
+  }
+  
+  // 성능 테스트
+  const testPerformance = document.getElementById('test-performance');
+  if (testPerformance) {
+    testPerformance.addEventListener('click', () => {
+      const result = document.getElementById('performance-test-result');
+      result.classList.add('show', 'success');
+      
+      const startTime = performance.now();
+      
+      // 무거운 작업 시뮬레이션
+      let sum = 0;
+      for (let i = 0; i < 1000000; i++) {
+        sum += Math.sqrt(i);
+      }
+      
+      const endTime = performance.now();
+      const duration = (endTime - startTime).toFixed(2);
+      
+      result.textContent = `✅ 성능 테스트 완료\n실행 시간: ${duration}ms\n계산 결과: ${sum.toFixed(2)}`;
+      showNotification(`성능 테스트 완료 (${duration}ms)`, 'success');
+    });
+  }
+  
+  // API 테스트
+  const testApi = document.getElementById('test-api');
+  if (testApi) {
+    testApi.addEventListener('click', async () => {
+      const result = document.getElementById('api-test-result');
+      result.classList.add('show', 'success');
+      result.textContent = '⏳ API 테스트 중...';
+      
+      const tests = [];
+      
+      try {
+        // 1. 워커 목록
+        const workers = await window.api.invoke('get-workers');
+        tests.push(`✅ get-workers: ${workers.length}명`);
+        
+        // 2. 대시보드 통계
+        const stats = await window.api.invoke('get-dashboard-stats');
+        tests.push(`✅ get-dashboard-stats: OK`);
+        
+        // 3. 알림 목록
+        const alerts = await window.api.invoke('get-risk-alerts', 'all');
+        tests.push(`✅ get-risk-alerts: ${alerts.length}건`);
+        
+        // 4. 상담사 목록
+        const counselors = await window.api.invoke('get-counselors');
+        tests.push(`✅ get-counselors: ${counselors.length}명`);
+        
+        result.textContent = '✅ 모든 API 테스트 통과\n\n' + tests.join('\n');
+        showNotification('API 테스트가 완료되었습니다', 'success');
+        
+      } catch (error) {
+        result.classList.remove('success');
+        result.classList.add('error');
+        result.textContent = '❌ API 테스트 실패\n' + error.message;
+      }
+    });
+  }
+}
+
+// 미리보기 뷰 로드 시 초기화
+const originalLoadPreviewView = loadPreviewView;
+loadPreviewView = function() {
+  originalLoadPreviewView();
+  setupLivePreview();
+  setupFunctionTests();
+};
+
+
+// ===========================
+// 실시간 모니터링 기능
+// ===========================
+
+let realtimeMonitor = {
+  isActive: false,
+  isPaused: false,
+  startTime: Date.now(),
+  stats: {
+    totalLogs: 0,
+    activeAlerts: 0,
+    totalWorkers: 0,
+    sessions: 0
+  },
+  previousStats: {},
+  apiCallCount: 0,
+  responseTimes: [],
+  updateInterval: null,
+  trendChart: null,
+  trendData: {
+    labels: [],
+    logs: [],
+    alerts: []
+  }
+};
+
+// 실시간 모니터 초기화
+function setupRealtimeMonitor() {
+  const realtimeContent = document.getElementById('realtime-preview');
+  if (!realtimeContent) return;
+  
+  // 초기 데이터 로드
+  loadRealtimeStats();
+  
+  // 실시간 차트 초기화
+  initRealtimeTrendChart();
+  
+  // 이벤트 리스너 설정
+  setupRealtimeEventListeners();
+  
+  // 자동 업데이트 시작
+  startRealtimeMonitoring();
+  
+  addRealtimeLog('시스템이 초기화되었습니다', 'success');
+}
+
+// 실시간 통계 로드
+async function loadRealtimeStats() {
+  try {
+    const startTime = performance.now();
+    
+    // 병렬로 모든 데이터 가져오기
+    const [workers, logs, alerts, sessions] = await Promise.all([
+      window.api.invoke('get-active-workers'),
+      window.api.invoke('get-recent-emotion-logs', 100),
+      window.api.invoke('get-risk-alerts'),
+      window.api.invoke('get-counseling-sessions')
+    ]);
+    
+    const endTime = performance.now();
+    const responseTime = Math.round(endTime - startTime);
+    
+    // 이전 값 저장
+    realtimeMonitor.previousStats = { ...realtimeMonitor.stats };
+    
+    // 새 값 설정
+    realtimeMonitor.stats = {
+      totalLogs: logs.length,
+      activeAlerts: alerts.filter(a => a.status === 'active').length,
+      totalWorkers: workers.length,
+      sessions: sessions.length
+    };
+    
+    // API 호출 통계 업데이트
+    realtimeMonitor.apiCallCount += 4;
+    realtimeMonitor.responseTimes.push(responseTime);
+    if (realtimeMonitor.responseTimes.length > 20) {
+      realtimeMonitor.responseTimes.shift();
+    }
+    
+    // UI 업데이트
+    updateRealtimeUI();
+    updateRealtimeChart();
+    
+    // 변경사항이 있으면 로그 추가
+    checkForChanges();
+    
+  } catch (error) {
+    console.error('실시간 통계 로드 실패:', error);
+    addRealtimeLog('데이터 로드 중 오류 발생', 'error');
+  }
+}
+
+// 실시간 UI 업데이트
+function updateRealtimeUI() {
+  const stats = realtimeMonitor.stats;
+  const prev = realtimeMonitor.previousStats;
+  
+  // 값 업데이트
+  updateStatValue('rt-total-logs', stats.totalLogs, prev.totalLogs);
+  updateStatValue('rt-active-alerts', stats.activeAlerts, prev.activeAlerts);
+  updateStatValue('rt-total-workers', stats.totalWorkers, prev.totalWorkers);
+  updateStatValue('rt-sessions', stats.sessions, prev.sessions);
+  
+  // 성능 지표 업데이트
+  const avgResponse = realtimeMonitor.responseTimes.length > 0
+    ? Math.round(realtimeMonitor.responseTimes.reduce((a, b) => a + b, 0) / realtimeMonitor.responseTimes.length)
+    : 0;
+  
+  document.getElementById('rt-avg-response').textContent = `${avgResponse} ms`;
+  document.getElementById('rt-api-calls').textContent = realtimeMonitor.apiCallCount;
+  
+  // 메모리 사용량 (근사치)
+  if (performance.memory) {
+    const memoryMB = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(1);
+    document.getElementById('rt-memory-usage').textContent = `${memoryMB} MB`;
+  }
+  
+  // 업타임
+  const uptime = Math.floor((Date.now() - realtimeMonitor.startTime) / 1000);
+  document.getElementById('rt-uptime').textContent = formatUptime(uptime);
+  
+  // 마지막 업데이트 시간
+  document.getElementById('realtime-last-update').textContent = '방금 전';
+}
+
+// 통계 값 업데이트 및 변화 표시
+function updateStatValue(elementId, newValue, oldValue) {
+  const valueElement = document.getElementById(elementId);
+  const changeElement = document.getElementById(`${elementId.replace('rt-', 'rt-')}-change`);
+  
+  if (!valueElement || !changeElement) return;
+  
+  // 애니메이션과 함께 값 업데이트
+  valueElement.style.transform = 'scale(1.1)';
+  valueElement.textContent = newValue;
+  
+  setTimeout(() => {
+    valueElement.style.transform = 'scale(1)';
+  }, 200);
+  
+  // 변화량 계산
+  const diff = newValue - (oldValue || 0);
+  
+  if (diff > 0) {
+    changeElement.textContent = `▲ +${diff}`;
+    changeElement.classList.remove('negative');
+    changeElement.style.color = '#6ec576';
+  } else if (diff < 0) {
+    changeElement.textContent = `▼ ${diff}`;
+    changeElement.classList.add('negative');
+    changeElement.style.color = '#ff6b6b';
+  } else {
+    changeElement.textContent = '변화 없음';
+    changeElement.classList.remove('negative');
+    changeElement.style.color = '#8e9aaf';
+  }
+}
+
+// 실시간 차트 초기화
+function initRealtimeTrendChart() {
+  const canvas = document.getElementById('realtime-trend-chart');
+  if (!canvas) return;
+  
+  const ctx = canvas.getContext('2d');
+  
+  realtimeMonitor.trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: '감정 로그',
+          data: [],
+          borderColor: '#4f86ff',
+          backgroundColor: 'rgba(79, 134, 255, 0.1)',
+          tension: 0.4,
+          fill: true
+        },
+        {
+          label: '활성 알림',
+          data: [],
+          borderColor: '#ff6b6b',
+          backgroundColor: 'rgba(255, 107, 107, 0.1)',
+          tension: 0.4,
+          fill: true
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: { color: '#e0e1dd' }
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { color: '#8e9aaf' },
+          grid: { color: '#3a3d5a' }
+        },
+        x: {
+          ticks: { color: '#8e9aaf' },
+          grid: { color: '#3a3d5a' }
+        }
+      },
+      animation: {
+        duration: 500
+      }
+    }
+  });
+}
+
+// 실시간 차트 업데이트
+function updateRealtimeChart() {
+  if (!realtimeMonitor.trendChart) return;
+  
+  const now = new Date();
+  const timeLabel = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+  
+  // 데이터 추가
+  realtimeMonitor.trendData.labels.push(timeLabel);
+  realtimeMonitor.trendData.logs.push(realtimeMonitor.stats.totalLogs);
+  realtimeMonitor.trendData.alerts.push(realtimeMonitor.stats.activeAlerts);
+  
+  // 최대 20개 데이터 포인트 유지
+  if (realtimeMonitor.trendData.labels.length > 20) {
+    realtimeMonitor.trendData.labels.shift();
+    realtimeMonitor.trendData.logs.shift();
+    realtimeMonitor.trendData.alerts.shift();
+  }
+  
+  // 차트 업데이트
+  realtimeMonitor.trendChart.data.labels = realtimeMonitor.trendData.labels;
+  realtimeMonitor.trendChart.data.datasets[0].data = realtimeMonitor.trendData.logs;
+  realtimeMonitor.trendChart.data.datasets[1].data = realtimeMonitor.trendData.alerts;
+  realtimeMonitor.trendChart.update('none'); // 애니메이션 없이 업데이트
+}
+
+// 변경사항 확인 및 로그 추가
+function checkForChanges() {
+  const stats = realtimeMonitor.stats;
+  const prev = realtimeMonitor.previousStats;
+  
+  if (stats.totalLogs > (prev.totalLogs || 0)) {
+    addRealtimeLog(`새로운 감정 로그 ${stats.totalLogs - prev.totalLogs}건 추가됨`, 'success');
+  }
+  
+  if (stats.activeAlerts > (prev.activeAlerts || 0)) {
+    addRealtimeLog(`새로운 리스크 알림 ${stats.activeAlerts - prev.activeAlerts}건 생성됨`, 'warning');
+  }
+  
+  if (stats.totalWorkers > (prev.totalWorkers || 0)) {
+    addRealtimeLog(`케어 인력 ${stats.totalWorkers - prev.totalWorkers}명 추가됨`, 'info');
+  }
+  
+  if (stats.sessions > (prev.sessions || 0)) {
+    addRealtimeLog(`상담 세션 ${stats.sessions - prev.sessions}건 생성됨`, 'info');
+  }
+}
+
+// 실시간 로그 추가
+function addRealtimeLog(message, type = 'info') {
+  if (realtimeMonitor.isPaused) return;
+  
+  const logContainer = document.getElementById('realtime-activity-log');
+  if (!logContainer) return;
+  
+  const now = new Date();
+  const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+  
+  const icons = {
+    info: 'ℹ️',
+    success: '✅',
+    warning: '⚠️',
+    error: '❌'
+  };
+  
+  const logItem = document.createElement('div');
+  logItem.className = `activity-item ${type}`;
+  logItem.innerHTML = `
+    <span class="activity-time">${timeStr}</span>
+    <span class="activity-icon">${icons[type]}</span>
+    <span class="activity-message">${message}</span>
+  `;
+  
+  // 맨 위에 추가
+  logContainer.insertBefore(logItem, logContainer.firstChild);
+  
+  // 최대 50개 로그 유지
+  while (logContainer.children.length > 50) {
+    logContainer.removeChild(logContainer.lastChild);
+  }
+}
+
+// 실시간 모니터링 시작
+function startRealtimeMonitoring() {
+  if (realtimeMonitor.isActive) return;
+  
+  realtimeMonitor.isActive = true;
+  realtimeMonitor.startTime = Date.now();
+  
+  // 3초마다 업데이트
+  realtimeMonitor.updateInterval = setInterval(() => {
+    if (!realtimeMonitor.isPaused) {
+      loadRealtimeStats();
+    }
+  }, 3000);
+  
+  addRealtimeLog('실시간 모니터링이 시작되었습니다', 'success');
+}
+
+// 실시간 모니터링 중지
+function stopRealtimeMonitoring() {
+  if (!realtimeMonitor.isActive) return;
+  
+  realtimeMonitor.isActive = false;
+  
+  if (realtimeMonitor.updateInterval) {
+    clearInterval(realtimeMonitor.updateInterval);
+    realtimeMonitor.updateInterval = null;
+  }
+  
+  addRealtimeLog('실시간 모니터링이 중지되었습니다', 'warning');
+}
+
+// 이벤트 리스너 설정
+function setupRealtimeEventListeners() {
+  // 로그 지우기
+  const clearLogBtn = document.getElementById('rt-clear-log');
+  if (clearLogBtn) {
+    clearLogBtn.addEventListener('click', () => {
+      const logContainer = document.getElementById('realtime-activity-log');
+      logContainer.innerHTML = '';
+      addRealtimeLog('로그가 초기화되었습니다', 'info');
+    });
+  }
+  
+  // 일시정지/재개
+  const pauseLogBtn = document.getElementById('rt-pause-log');
+  if (pauseLogBtn) {
+    pauseLogBtn.addEventListener('click', () => {
+      realtimeMonitor.isPaused = !realtimeMonitor.isPaused;
+      
+      if (realtimeMonitor.isPaused) {
+        pauseLogBtn.textContent = '재개';
+        pauseLogBtn.classList.remove('btn-primary');
+        pauseLogBtn.classList.add('btn-success');
+        addRealtimeLog('로그 기록이 일시정지되었습니다', 'warning');
+      } else {
+        pauseLogBtn.textContent = '일시정지';
+        pauseLogBtn.classList.remove('btn-success');
+        pauseLogBtn.classList.add('btn-primary');
+        addRealtimeLog('로그 기록이 재개되었습니다', 'success');
+      }
+    });
+  }
+  
+  // 빠른 액션 버튼들
+  setupQuickActionButtons();
+}
+
+// 빠른 액션 버튼 설정
+function setupQuickActionButtons() {
+  // 감정 로그 추가
+  const addLogBtn = document.getElementById('rt-add-log');
+  if (addLogBtn) {
+    addLogBtn.addEventListener('click', async () => {
+      const emotions = ['neutral', 'tired', 'stress', 'negative', 'positive'];
+      const emotion = emotions[Math.floor(Math.random() * emotions.length)];
+      const intensity = Math.floor(Math.random() * 10) + 1;
+      
+      try {
+        await window.api.invoke('add-emotion-log', {
+          workerId: 1,
+          emotion: emotion,
+          intensity: intensity,
+          notes: `실시간 테스트 로그 (${new Date().toLocaleTimeString('ko-KR')})`
+        });
+        
+        addRealtimeLog(`감정 로그가 추가되었습니다 (${emotion}, 강도: ${intensity})`, 'success');
+        showNotification('감정 로그가 추가되었습니다', 'success');
+        
+        // 즉시 업데이트
+        setTimeout(() => loadRealtimeStats(), 500);
+        
+      } catch (error) {
+        addRealtimeLog('감정 로그 추가 실패', 'error');
+      }
+    });
+  }
+  
+  // 알림 생성
+  const createAlertBtn = document.getElementById('rt-create-alert');
+  if (createAlertBtn) {
+    createAlertBtn.addEventListener('click', () => {
+      addRealtimeLog('리스크 알림 생성 요청 (데모)', 'warning');
+      showNotification('알림 생성 기능은 데모 모드입니다', 'info');
+    });
+  }
+  
+  // 인력 추가
+  const addWorkerBtn = document.getElementById('rt-add-worker');
+  if (addWorkerBtn) {
+    addWorkerBtn.addEventListener('click', () => {
+      addRealtimeLog('케어 인력 추가 요청 (데모)', 'info');
+      showNotification('인력 추가 기능은 데모 모드입니다', 'info');
+    });
+  }
+  
+  // 데이터 새로고침
+  const refreshBtn = document.getElementById('rt-refresh-data');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', async () => {
+      addRealtimeLog('수동 데이터 새로고침 시작...', 'info');
+      await loadRealtimeStats();
+      showNotification('데이터가 새로고침되었습니다', 'success');
+    });
+  }
+}
+
+// 업타임 포맷팅
+function formatUptime(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  
+  if (hours > 0) {
+    return `${hours}시간 ${minutes}분`;
+  } else if (minutes > 0) {
+    return `${minutes}분 ${secs}초`;
+  } else {
+    return `${secs}초`;
+  }
+}
+
+// 미리보기 뷰 로더 확장
+const originalLoadPreviewView = window.loadPreviewView;
+window.loadPreviewView = function() {
+  if (originalLoadPreviewView) {
+    originalLoadPreviewView();
+  }
+  
+  // 실시간 모니터 초기화
+  setTimeout(() => {
+    setupRealtimeMonitor();
+  }, 500);
+};
+
