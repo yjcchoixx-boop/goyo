@@ -2251,6 +2251,18 @@ return `테스트 실행 시간: ${now.toLocaleTimeString('ko-KR')}`;</textarea>
     </div>
   </div>
 
+  <!-- 웹 브라우저용 API 어댑터 (Electron이 아닐 때만 로드) -->
+  <script>
+    // Electron 환경이 아니면 웹 API 어댑터 로드
+    if (typeof window.require === 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'web-api.js';
+      document.head.appendChild(script);
+      console.log('🌐 웹 브라우저 모드: web-api.js 로드됨');
+    } else {
+      console.log('⚡ Electron 모드: 네이티브 API 사용');
+    }
+  </script>
   <script src="renderer.js"></script>
 </body>
 </html>
