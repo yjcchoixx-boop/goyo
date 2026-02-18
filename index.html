@@ -437,6 +437,7 @@
         <!-- 미리보기 탭 -->
         <div class="preview-tabs">
           <button class="preview-tab-btn active" data-preview="live">🔥 라이브 프리뷰</button>
+          <button class="preview-tab-btn" data-preview="screenshots">📸 스크린샷</button>
           <button class="preview-tab-btn" data-preview="realtime">📡 실시간 모니터</button>
           <button class="preview-tab-btn" data-preview="test">🧪 기능 테스트</button>
           <button class="preview-tab-btn" data-preview="overview">📊 전체 개요</button>
@@ -584,6 +585,259 @@ return `테스트 실행 시간: ${now.toLocaleTimeString('ko-KR')}`;</textarea>
                   <div class="tip-icon">🚀</div>
                   <h4>개발 속도 향상</h4>
                   <p>앱 재시작 없이 빠른 반복 개발이 가능합니다</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 스크린샷 탭 -->
+        <div id="screenshots-preview" class="preview-content">
+          <div class="preview-section">
+            <h2>📸 GOYO 시스템 스크린샷</h2>
+            <p class="section-description">실제 화면 캡처를 통해 GOYO 시스템의 모든 기능을 미리 확인하세요</p>
+
+            <div class="screenshots-grid">
+              <!-- 메인 대시보드 -->
+              <div class="screenshot-card">
+                <div class="screenshot-header">
+                  <h3>📊 메인 대시보드</h3>
+                  <span class="screenshot-badge main">핵심</span>
+                </div>
+                <div class="screenshot-image-container">
+                  <img src="https://www.genspark.ai/api/files/s/JLjZTJ2N" alt="GOYO 메인 대시보드" class="screenshot-image">
+                  <div class="screenshot-overlay">
+                    <button class="btn-view-fullscreen" onclick="viewFullscreen(this.previousElementSibling.previousElementSibling)">
+                      🔍 크게 보기
+                    </button>
+                  </div>
+                </div>
+                <div class="screenshot-description">
+                  <p><strong>실시간 감정 모니터링 대시보드</strong></p>
+                  <ul class="screenshot-features">
+                    <li>✅ 전체 인력 현황 (8명)</li>
+                    <li>✅ 위험도별 통계 (안정 5명, 주의 2명, 위험 1명)</li>
+                    <li>✅ 감정 분포 도넛 차트</li>
+                    <li>✅ 번아웃 추이 라인 그래프</li>
+                    <li>✅ 실시간 알림 패널</li>
+                    <li>✅ 인력 상태 리스트</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 리스크 알림 -->
+              <div class="screenshot-card">
+                <div class="screenshot-header">
+                  <h3>⚠️ 리스크 알림</h3>
+                  <span class="screenshot-badge alert">긴급</span>
+                </div>
+                <div class="screenshot-image-container">
+                  <div class="screenshot-placeholder">
+                    <div class="placeholder-icon">⚠️</div>
+                    <p>조기 경보 시스템 화면</p>
+                    <small>고위험군 자동 감지 및 알림</small>
+                  </div>
+                </div>
+                <div class="screenshot-description">
+                  <p><strong>조기 경보 시스템</strong></p>
+                  <ul class="screenshot-features">
+                    <li>🚨 긴급 알림 (위험도 72점)</li>
+                    <li>🟡 주의 알림 (위험도 50-71점)</li>
+                    <li>📋 전체/활성/확인/해결 필터</li>
+                    <li>💡 AI 개입 방안 제안</li>
+                    <li>✅ 알림 확인 및 해결 처리</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 케어 인력 관리 -->
+              <div class="screenshot-card">
+                <div class="screenshot-header">
+                  <h3>👥 케어 인력 관리</h3>
+                  <span class="screenshot-badge crud">CRUD</span>
+                </div>
+                <div class="screenshot-image-container">
+                  <div class="screenshot-placeholder">
+                    <div class="placeholder-icon">👥</div>
+                    <p>인력 관리 테이블</p>
+                    <small>Full CRUD 기능</small>
+                  </div>
+                </div>
+                <div class="screenshot-description">
+                  <p><strong>완전한 CRUD 시스템</strong></p>
+                  <ul class="screenshot-features">
+                    <li>➕ 인력 추가 (모달 폼)</li>
+                    <li>✏️ 인력 정보 수정</li>
+                    <li>🗑️ 인력 삭제 (확인 절차)</li>
+                    <li>🔍 실시간 검색 (debounce)</li>
+                    <li>🏷️ 부서/상태 필터링</li>
+                    <li>📊 테이블 정렬 기능</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 심리상담 연계 -->
+              <div class="screenshot-card">
+                <div class="screenshot-header">
+                  <h3>🧠 심리상담 연계</h3>
+                  <span class="screenshot-badge new">AI</span>
+                </div>
+                <div class="screenshot-image-container">
+                  <div class="screenshot-placeholder">
+                    <div class="placeholder-icon">🧠</div>
+                    <p>자동 상담 연계 화면</p>
+                    <small>AI 매칭 시스템</small>
+                  </div>
+                </div>
+                <div class="screenshot-description">
+                  <p><strong>자동 심리상담 연계</strong></p>
+                  <ul class="screenshot-features">
+                    <li>🤖 고위험군 자동 감지</li>
+                    <li>👨‍⚕️ 상담사 스마트 매칭</li>
+                    <li>📅 24시간 내 상담 예약</li>
+                    <li>📊 상담사 가용성 관리</li>
+                    <li>📝 상담 이력 추적</li>
+                    <li>🔄 후속 조치 스케줄링</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 데이터 수집 -->
+              <div class="screenshot-card">
+                <div class="screenshot-header">
+                  <h3>📱 데이터 수집</h3>
+                  <span class="screenshot-badge feature">7가지</span>
+                </div>
+                <div class="screenshot-image-container">
+                  <div class="screenshot-placeholder">
+                    <div class="placeholder-icon">📱</div>
+                    <p>다중 채널 데이터 수집</p>
+                    <small>7가지 수집 방식</small>
+                  </div>
+                </div>
+                <div class="screenshot-description">
+                  <p><strong>7가지 데이터 수집 방식</strong></p>
+                  <ul class="screenshot-features">
+                    <li>📝 직접 입력 (6개 감정 카드)</li>
+                    <li>👨‍💼 관리자 입력 (면담 기록)</li>
+                    <li>📊 일괄 입력 (테이블)</li>
+                    <li>📱 모바일 체크인 (5개 이모지)</li>
+                    <li>📸 얼굴 인식 AI 분석</li>
+                    <li>⌚ 웨어러블 센서 자동 수집</li>
+                    <li>📋 최근 기록 (20건)</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 얼굴 인식 AI -->
+              <div class="screenshot-card">
+                <div class="screenshot-header">
+                  <h3>📸 얼굴 인식 AI</h3>
+                  <span class="screenshot-badge ai">AI</span>
+                </div>
+                <div class="screenshot-image-container">
+                  <div class="screenshot-placeholder">
+                    <div class="placeholder-icon">📸</div>
+                    <p>AI 감정 분석 화면</p>
+                    <small>WebRTC 카메라 + AI</small>
+                  </div>
+                </div>
+                <div class="screenshot-description">
+                  <p><strong>AI 기반 감정 분석</strong></p>
+                  <ul class="screenshot-features">
+                    <li>📷 웹캠 실시간 촬영</li>
+                    <li>🤖 6가지 감정 자동 인식</li>
+                    <li>📊 신뢰도 점수 (60-100%)</li>
+                    <li>📈 4가지 지표 분석</li>
+                    <li>📝 자동 폼 완성</li>
+                    <li>🔒 개인정보 보호 (즉시 삭제)</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 웨어러블 시뮬레이션 -->
+              <div class="screenshot-card">
+                <div class="screenshot-header">
+                  <h3>⌚ 웨어러블 센서</h3>
+                  <span class="screenshot-badge realtime">실시간</span>
+                </div>
+                <div class="screenshot-image-container">
+                  <div class="screenshot-placeholder">
+                    <div class="placeholder-icon">⌚</div>
+                    <p>센서 데이터 모니터</p>
+                    <small>4가지 생체 지표</small>
+                  </div>
+                </div>
+                <div class="screenshot-description">
+                  <p><strong>웨어러블 자동 수집</strong></p>
+                  <ul class="screenshot-features">
+                    <li>💓 심박수 (60-100 bpm)</li>
+                    <li>😰 스트레스 지수 (0-100)</li>
+                    <li>😴 수면 품질 (0-100%)</li>
+                    <li>🚶 활동량 (걸음 수)</li>
+                    <li>⚠️ 고스트레스 자동 감지</li>
+                    <li>📈 실시간 타임라인</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 데이터 분석 -->
+              <div class="screenshot-card">
+                <div class="screenshot-header">
+                  <h3>📈 데이터 분석</h3>
+                  <span class="screenshot-badge analytics">분석</span>
+                </div>
+                <div class="screenshot-image-container">
+                  <div class="screenshot-placeholder">
+                    <div class="placeholder-icon">📈</div>
+                    <p>다차원 데이터 분석</p>
+                    <small>6개 차트</small>
+                  </div>
+                </div>
+                <div class="screenshot-description">
+                  <p><strong>6가지 분석 차트</strong></p>
+                  <ul class="screenshot-features">
+                    <li>📊 부서별 감정 비교</li>
+                    <li>📈 월별 번아웃 추이</li>
+                    <li>🎯 감정 타입 분포</li>
+                    <li>📉 주간 감정 변화</li>
+                    <li>🔍 개인별 상세 분석</li>
+                    <li>📊 960+ 로그 기반 정확도</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- 시스템 요구사항 -->
+            <div class="system-requirements">
+              <h3>💻 시스템 요구사항</h3>
+              <div class="requirements-grid">
+                <div class="requirement-card">
+                  <h4>최소 사양</h4>
+                  <ul>
+                    <li>CPU: Intel i3 또는 동급</li>
+                    <li>RAM: 4GB</li>
+                    <li>저장공간: 500MB</li>
+                    <li>OS: Windows 10, macOS 10.14, Ubuntu 18.04</li>
+                  </ul>
+                </div>
+                <div class="requirement-card">
+                  <h4>권장 사양</h4>
+                  <ul>
+                    <li>CPU: Intel i5 이상</li>
+                    <li>RAM: 8GB 이상</li>
+                    <li>저장공간: 1GB</li>
+                    <li>OS: Windows 11, macOS 12+, Ubuntu 22.04</li>
+                  </ul>
+                </div>
+                <div class="requirement-card">
+                  <h4>추가 요구사항</h4>
+                  <ul>
+                    <li>인터넷 연결 (초기 설치)</li>
+                    <li>웹캠 (얼굴 인식 기능용)</li>
+                    <li>마이크 (선택사항)</li>
+                    <li>1920x1080 이상 해상도 권장</li>
+                  </ul>
                 </div>
               </div>
             </div>

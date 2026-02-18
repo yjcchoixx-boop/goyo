@@ -3263,3 +3263,50 @@ window.loadPreviewView = function() {
   }, 500);
 };
 
+
+// ============================================
+// 스크린샷 풀스크린 기능
+// ============================================
+
+function viewFullscreen(imgElement) {
+  // 풀스크린 모달 생성
+  const modal = document.createElement('div');
+  modal.className = 'fullscreen-modal active';
+  
+  const img = document.createElement('img');
+  img.src = imgElement.src;
+  img.alt = imgElement.alt;
+  img.className = 'fullscreen-image';
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'fullscreen-close';
+  closeBtn.innerHTML = '✕';
+  closeBtn.onclick = () => {
+    modal.classList.remove('active');
+    setTimeout(() => modal.remove(), 300);
+  };
+  
+  modal.appendChild(img);
+  modal.appendChild(closeBtn);
+  document.body.appendChild(modal);
+  
+  // ESC 키로 닫기
+  const handleEsc = (e) => {
+    if (e.key === 'Escape') {
+      closeBtn.click();
+      document.removeEventListener('keydown', handleEsc);
+    }
+  };
+  document.addEventListener('keydown', handleEsc);
+  
+  // 모달 배경 클릭으로 닫기
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeBtn.click();
+    }
+  });
+}
+
+// 전역 함수로 노출 (HTML에서 직접 호출)
+window.viewFullscreen = viewFullscreen;
+

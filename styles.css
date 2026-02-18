@@ -4295,3 +4295,312 @@ body {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ============================================
+   스크린샷 미리보기
+   ============================================ */
+
+.screenshots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  gap: 30px;
+  margin-top: 30px;
+}
+
+.screenshot-card {
+  background: linear-gradient(135deg, #1a1c2e 0%, #2b2d42 100%);
+  border: 2px solid #3a3d5a;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.screenshot-card:hover {
+  transform: translateY(-5px);
+  border-color: #4f86ff;
+  box-shadow: 0 10px 40px rgba(79, 134, 255, 0.3);
+}
+
+.screenshot-header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(79, 134, 255, 0.05);
+  border-bottom: 1px solid #3a3d5a;
+}
+
+.screenshot-header h3 {
+  color: #e0e1dd;
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.screenshot-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.screenshot-badge.main {
+  background: linear-gradient(135deg, #4f86ff 0%, #457b9d 100%);
+  color: white;
+}
+
+.screenshot-badge.alert {
+  background: linear-gradient(135deg, #e63946 0%, #f77f00 100%);
+  color: white;
+  animation: pulse-badge 2s infinite;
+}
+
+.screenshot-badge.crud {
+  background: linear-gradient(135deg, #06d6a0 0%, #118ab2 100%);
+  color: white;
+}
+
+.screenshot-badge.new {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  color: white;
+  animation: pulse-badge 2s infinite;
+}
+
+.screenshot-badge.ai {
+  background: linear-gradient(135deg, #9b5de5 0%, #f15bb5 100%);
+  color: white;
+}
+
+.screenshot-badge.feature {
+  background: linear-gradient(135deg, #ffd60a 0%, #ffc300 100%);
+  color: #1a1c2e;
+  font-weight: 700;
+}
+
+.screenshot-badge.realtime {
+  background: linear-gradient(135deg, #00f5ff 0%, #4cc9f0 100%);
+  color: #1a1c2e;
+  font-weight: 700;
+}
+
+.screenshot-badge.analytics {
+  background: linear-gradient(135deg, #7209b7 0%, #560bad 100%);
+  color: white;
+}
+
+.screenshot-image-container {
+  position: relative;
+  width: 100%;
+  min-height: 300px;
+  background: #0f1419;
+  overflow: hidden;
+}
+
+.screenshot-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.screenshot-image:hover {
+  transform: scale(1.05);
+}
+
+.screenshot-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.screenshot-image-container:hover .screenshot-overlay {
+  opacity: 1;
+}
+
+.btn-view-fullscreen {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #4f86ff 0%, #457b9d 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-view-fullscreen:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(79, 134, 255, 0.5);
+}
+
+.screenshot-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 40px;
+  text-align: center;
+  background: radial-gradient(circle at center, #1a1c2e 0%, #0f1419 100%);
+}
+
+.placeholder-icon {
+  font-size: 5rem;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.screenshot-placeholder p {
+  color: #e0e1dd;
+  font-size: 1.2rem;
+  margin: 10px 0;
+}
+
+.screenshot-placeholder small {
+  color: #8e9aaf;
+  font-size: 0.9rem;
+}
+
+.screenshot-description {
+  padding: 20px;
+}
+
+.screenshot-description p {
+  color: #e0e1dd;
+  margin-bottom: 15px;
+  font-size: 1rem;
+}
+
+.screenshot-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.screenshot-features li {
+  padding: 8px 0;
+  color: #8e9aaf;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(142, 154, 175, 0.1);
+}
+
+.screenshot-features li:last-child {
+  border-bottom: none;
+}
+
+/* 시스템 요구사항 */
+.system-requirements {
+  margin-top: 50px;
+  padding: 30px;
+  background: linear-gradient(135deg, #1a1c2e 0%, #2b2d42 100%);
+  border: 2px solid #3a3d5a;
+  border-radius: 16px;
+}
+
+.system-requirements h3 {
+  color: #e0e1dd;
+  margin-bottom: 25px;
+  font-size: 1.5rem;
+}
+
+.requirements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.requirement-card {
+  background: rgba(79, 134, 255, 0.05);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(79, 134, 255, 0.2);
+}
+
+.requirement-card h4 {
+  color: #4f86ff;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+}
+
+.requirement-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.requirement-card ul li {
+  padding: 8px 0;
+  color: #8e9aaf;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(142, 154, 175, 0.1);
+}
+
+.requirement-card ul li:last-child {
+  border-bottom: none;
+}
+
+/* 풀스크린 모달 */
+.fullscreen-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.fullscreen-modal.active {
+  display: flex;
+}
+
+.fullscreen-image {
+  max-width: 95%;
+  max-height: 95vh;
+  object-fit: contain;
+}
+
+.fullscreen-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(230, 57, 70, 0.9);
+  color: white;
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.fullscreen-close:hover {
+  background: #e63946;
+  transform: scale(1.1);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .screenshots-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .requirements-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
