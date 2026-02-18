@@ -1,0 +1,2257 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GOYO - 감정 운영 인텔리전스</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <!-- 상단 타이틀 바 -->
+  <div class="title-bar">
+    <div class="title-bar-left">
+      <div class="logo">GOYO</div>
+      <div class="subtitle">Emotional Operations Intelligence</div>
+    </div>
+    <div class="title-bar-right">
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span>실시간 모니터링</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 메인 컨테이너 -->
+  <div class="main-container">
+    <!-- 사이드바 네비게이션 -->
+    <nav class="sidebar">
+      <ul class="nav-menu">
+        <li class="nav-item active" data-view="dashboard">
+          <span class="icon">📊</span>
+          <span class="label">대시보드</span>
+        </li>
+        <li class="nav-item" data-view="alerts">
+          <span class="icon">🔔</span>
+          <span class="label">리스크 알림</span>
+          <span class="badge" id="alert-badge">0</span>
+        </li>
+        <li class="nav-item" data-view="workers">
+          <span class="icon">👥</span>
+          <span class="label">케어 인력</span>
+        </li>
+        <li class="nav-item" data-view="analytics">
+          <span class="icon">📈</span>
+          <span class="label">데이터 분석</span>
+        </li>
+        <li class="nav-item" data-view="reports">
+          <span class="icon">📝</span>
+          <span class="label">리포트</span>
+        </li>
+        <li class="nav-item" data-view="counseling">
+          <span class="icon">🧠</span>
+          <span class="label">심리상담 연계</span>
+          <span class="badge" id="counseling-badge">0</span>
+        </li>
+        <li class="nav-item" data-view="preview">
+          <span class="icon">🎬</span>
+          <span class="label">미리보기</span>
+        </li>
+        <li class="nav-item" data-view="data-collection">
+          <span class="icon">📝</span>
+          <span class="label">데이터 수집</span>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- 콘텐츠 영역 -->
+    <main class="content">
+      <!-- 대시보드 뷰 -->
+      <div id="dashboard-view" class="view active">
+        <div class="view-header">
+          <h1>📊 실시간 감정 모니터링 대시보드</h1>
+          <p class="view-subtitle">실시간 케어 인력 감정 상태 및 운영 인사이트</p>
+        </div>
+
+        <!-- 통계 카드 -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+              <div class="stat-value" id="total-workers">-</div>
+              <div class="stat-label">전체 인력</div>
+            </div>
+          </div>
+          <div class="stat-card positive">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+              <div class="stat-value" id="normal-workers">-</div>
+              <div class="stat-label">안정 상태</div>
+            </div>
+          </div>
+          <div class="stat-card warning">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-content">
+              <div class="stat-value" id="warning-workers">-</div>
+              <div class="stat-label">주의 필요</div>
+            </div>
+          </div>
+          <div class="stat-card alert">
+            <div class="stat-icon">🚨</div>
+            <div class="stat-content">
+              <div class="stat-value" id="danger-workers">-</div>
+              <div class="stat-label">위험 상태</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🧠</div>
+            <div class="stat-content">
+              <div class="stat-value" id="dashboard-scheduled-sessions">-</div>
+              <div class="stat-label">예정 상담</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 차트 영역 -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>감정 상태 분포</h3>
+            <canvas id="emotion-distribution-chart"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>번아웃 위험도 추이</h3>
+            <canvas id="burnout-trend-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- 실시간 알림 패널 -->
+        <div class="section-card">
+          <h3>🔔 실시간 알림</h3>
+          <div id="realtime-alerts"></div>
+        </div>
+
+        <!-- 인력 상태 현황 -->
+        <div class="section-card">
+          <h3>👥 인력 상태 현황</h3>
+          <div id="workers-status-list"></div>
+        </div>
+      </div>
+
+      <!-- 리스크 알림 뷰 -->
+      <div id="alerts-view" class="view">
+        <div class="view-header">
+          <h1>🔔 조기 경보 시스템</h1>
+          <p class="view-subtitle">번아웃 리스크 감지 및 개입 방안</p>
+        </div>
+
+        <!-- 알림 통계 -->
+        <div class="stats-grid">
+          <div class="stat-card alert">
+            <div class="stat-icon">🚨</div>
+            <div class="stat-content">
+              <div class="stat-value" id="critical-alerts">-</div>
+              <div class="stat-label">긴급 (위험)</div>
+            </div>
+          </div>
+          <div class="stat-card warning">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-content">
+              <div class="stat-value" id="high-alerts">-</div>
+              <div class="stat-label">높음 (주의)</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-content">
+              <div class="stat-value" id="medium-alerts">-</div>
+              <div class="stat-label">보통 (관찰)</div>
+            </div>
+          </div>
+          <div class="stat-card positive">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+              <div class="stat-value" id="resolved-alerts">-</div>
+              <div class="stat-label">해결 완료</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 알림 필터 -->
+        <div class="filter-bar">
+          <button class="filter-btn active" data-filter="all">전체</button>
+          <button class="filter-btn" data-filter="pending">활성</button>
+          <button class="filter-btn" data-filter="acknowledged">확인됨</button>
+          <button class="filter-btn" data-filter="resolved">해결됨</button>
+        </div>
+
+        <div id="alerts-container"></div>
+      </div>
+
+      <!-- 케어 인력 뷰 -->
+      <div id="workers-view" class="view">
+        <div class="view-header">
+          <div class="view-header-left">
+            <h1>👥 케어 인력 관리</h1>
+            <p class="view-subtitle">인력 추가, 수정, 삭제 및 상태 관리</p>
+          </div>
+          <div class="view-header-right">
+            <button class="btn btn-primary" id="add-worker-btn">
+              ➕ 인력 추가
+            </button>
+          </div>
+        </div>
+
+        <!-- 검색 및 필터 -->
+        <div class="toolbar">
+          <div class="search-box">
+            <input type="text" id="worker-search" placeholder="🔍 이름, 역할, 부서 검색...">
+          </div>
+          <div class="filter-group">
+            <select id="team-filter">
+              <option value="all">전체 부서</option>
+              <option value="A팀">A팀</option>
+              <option value="B팀">B팀</option>
+              <option value="C팀">C팀</option>
+            </select>
+            <select id="risk-filter">
+              <option value="all">전체 상태</option>
+              <option value="normal">안정</option>
+              <option value="warning">주의</option>
+              <option value="danger">위험</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 인력 테이블 -->
+        <div class="section-card">
+          <div class="table-container">
+            <table class="workers-table">
+              <thead>
+                <tr>
+                  <th>이름</th>
+                  <th>역할</th>
+                  <th>부서</th>
+                  <th>입사일</th>
+                  <th>연락처</th>
+                  <th>상태</th>
+                  <th>작업</th>
+                </tr>
+              </thead>
+              <tbody id="workers-table-body">
+                <!-- 동적 생성 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 데이터 분석 뷰 -->
+      <div id="analytics-view" class="view">
+        <div class="view-header">
+          <h1>📈 데이터 분석</h1>
+          <p class="view-subtitle">부서별 감정 상태 및 번아웃 추이 분석</p>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-card large">
+            <h3>부서별 감정 상태 비교</h3>
+            <canvas id="team-emotion-chart"></canvas>
+          </div>
+          <div class="chart-card large">
+            <h3>월별 번아웃 추이</h3>
+            <canvas id="monthly-burnout-chart"></canvas>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>감정 유형 분포</h3>
+            <canvas id="emotion-polar-chart"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>주간 감정 변화</h3>
+            <canvas id="weekly-emotion-chart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- 심리상담 연계 뷰 -->
+      <div id="counseling-view" class="view">
+        <div class="view-header">
+          <div class="view-header-left">
+            <h1>🧠 심리상담 자동 연계</h1>
+            <p class="view-subtitle">고위험군 자동 감지 및 전문 상담 연계</p>
+          </div>
+          <div class="view-header-right">
+            <button class="btn btn-primary" id="add-counselor-btn">
+              ➕ 상담사 추가
+            </button>
+          </div>
+        </div>
+
+        <!-- 상담 연계 통계 카드 -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-content">
+              <div class="stat-value" id="scheduled-sessions">-</div>
+              <div class="stat-label">예정된 상담</div>
+            </div>
+          </div>
+          <div class="stat-card positive">
+            <div class="stat-icon">👨‍⚕️</div>
+            <div class="stat-content">
+              <div class="stat-value" id="active-counselors">-</div>
+              <div class="stat-label">활동 상담사</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+              <div class="stat-value" id="completed-sessions">-</div>
+              <div class="stat-label">완료된 상담</div>
+            </div>
+          </div>
+          <div class="stat-card warning">
+            <div class="stat-icon">🔗</div>
+            <div class="stat-content">
+              <div class="stat-value" id="auto-linked">-</div>
+              <div class="stat-label">자동 연계 건수</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 탭 메뉴 -->
+        <div class="tab-menu">
+          <button class="tab-btn active" data-tab="sessions">상담 세션</button>
+          <button class="tab-btn" data-tab="counselors">상담사 관리</button>
+          <button class="tab-btn" data-tab="history">상담 이력</button>
+        </div>
+
+        <!-- 상담 세션 탭 -->
+        <div id="sessions-tab" class="tab-content active">
+          <div class="toolbar">
+            <div class="filter-group">
+              <select id="session-status-filter">
+                <option value="all">전체 상태</option>
+                <option value="scheduled">예정됨</option>
+                <option value="in_progress">진행중</option>
+                <option value="completed">완료됨</option>
+                <option value="cancelled">취소됨</option>
+              </select>
+              <select id="session-type-filter">
+                <option value="all">전체 유형</option>
+                <option value="auto">자동 연계</option>
+                <option value="manual">수동 생성</option>
+              </select>
+            </div>
+          </div>
+          <div class="section-card">
+            <div class="table-container">
+              <table class="sessions-table">
+                <thead>
+                  <tr>
+                    <th>케어 인력</th>
+                    <th>상담사</th>
+                    <th>상담 일정</th>
+                    <th>유형</th>
+                    <th>우선순위</th>
+                    <th>상태</th>
+                    <th>작업</th>
+                  </tr>
+                </thead>
+                <tbody id="sessions-table-body">
+                  <!-- 동적 생성 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 상담사 관리 탭 -->
+        <div id="counselors-tab" class="tab-content">
+          <div class="counselors-grid" id="counselors-grid">
+            <!-- 동적 생성 -->
+          </div>
+        </div>
+
+        <!-- 상담 이력 탭 -->
+        <div id="history-tab" class="tab-content">
+          <div class="section-card">
+            <div id="history-timeline">
+              <!-- 동적 생성 -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 리포트 뷰 -->
+      <div id="reports-view" class="view">
+        <div class="view-header">
+          <h1>📝 운영 리포트</h1>
+          <p class="view-subtitle">감정 데이터 기반 운영 리포트 생성 및 관리</p>
+        </div>
+
+        <!-- 리포트 생성 카드 -->
+        <div class="report-cards-grid">
+          <div class="report-card" data-report="weekly">
+            <div class="report-icon">📅</div>
+            <h3>주간 리포트</h3>
+            <p>최근 1주일간의 감정 데이터 및 리스크 분석</p>
+            <button class="btn btn-primary" onclick="generateReport('weekly')">생성</button>
+          </div>
+          <div class="report-card" data-report="monthly">
+            <div class="report-icon">📊</div>
+            <h3>월간 리포트</h3>
+            <p>월별 감정 트렌드 및 번아웃 통계</p>
+            <button class="btn btn-primary" onclick="generateReport('monthly')">생성</button>
+          </div>
+          <div class="report-card" data-report="quarterly">
+            <div class="report-icon">📈</div>
+            <h3>분기 리포트</h3>
+            <p>분기별 종합 분석 및 개선 제안</p>
+            <button class="btn btn-primary" onclick="generateReport('quarterly')">생성</button>
+          </div>
+          <div class="report-card" data-report="risk">
+            <div class="report-icon">⚠️</div>
+            <h3>위험 분석 리포트</h3>
+            <p>고위험군 인력 분석 및 개입 이력</p>
+            <button class="btn btn-primary" onclick="generateReport('risk')">생성</button>
+          </div>
+        </div>
+
+        <!-- 최근 리포트 목록 -->
+        <div class="section-card">
+          <h3>📋 최근 생성 리포트</h3>
+          <div id="reports-list"></div>
+        </div>
+      </div>
+
+      <!-- 미리보기 뷰 -->
+      <div id="preview-view" class="view">
+        <div class="view-header">
+          <h1>🎬 GOYO 시스템 미리보기</h1>
+          <p class="view-subtitle">주요 기능과 화면을 한눈에 확인하세요</p>
+        </div>
+
+        <!-- 미리보기 탭 -->
+        <div class="preview-tabs">
+          <button class="preview-tab-btn active" data-preview="live">🔥 라이브 프리뷰</button>
+          <button class="preview-tab-btn" data-preview="screenshots">📸 스크린샷</button>
+          <button class="preview-tab-btn" data-preview="realtime">📡 실시간 모니터</button>
+          <button class="preview-tab-btn" data-preview="test">🧪 기능 테스트</button>
+          <button class="preview-tab-btn" data-preview="overview">📊 전체 개요</button>
+          <button class="preview-tab-btn" data-preview="features">⚡ 주요 기능</button>
+          <button class="preview-tab-btn" data-preview="workflow">🔄 워크플로우</button>
+          <button class="preview-tab-btn" data-preview="demo">🎯 데모 시나리오</button>
+        </div>
+
+        <!-- 라이브 프리뷰 탭 -->
+        <div id="live-preview" class="preview-content active">
+          <div class="preview-section">
+            <div class="live-header">
+              <h2>🔥 라이브 프리뷰 & Hot Reload</h2>
+              <div class="live-status">
+                <span class="status-indicator pulse"></span>
+                <span>실시간 연결됨</span>
+              </div>
+            </div>
+            
+            <div class="live-description">
+              <p>
+                <strong>코드를 수정하면 즉시 화면에 반영됩니다!</strong><br>
+                아래에서 CSS, HTML, JavaScript를 실시간으로 테스트해보세요.
+              </p>
+            </div>
+
+            <div class="live-demo-grid">
+              <!-- CSS 라이브 테스트 -->
+              <div class="live-test-card">
+                <div class="test-header">
+                  <h3>🎨 CSS 라이브 테스트</h3>
+                  <button class="btn btn-secondary btn-sm" id="reset-css">초기화</button>
+                </div>
+                <div class="test-description">
+                  색상, 크기, 애니메이션을 실시간으로 변경해보세요
+                </div>
+                
+                <div class="test-controls">
+                  <div class="control-group">
+                    <label>배경색</label>
+                    <input type="color" id="live-bg-color" value="#1a1c2e">
+                  </div>
+                  <div class="control-group">
+                    <label>텍스트 색상</label>
+                    <input type="color" id="live-text-color" value="#e0e1dd">
+                  </div>
+                  <div class="control-group">
+                    <label>강조 색상</label>
+                    <input type="color" id="live-accent-color" value="#4f86ff">
+                  </div>
+                  <div class="control-group">
+                    <label>폰트 크기</label>
+                    <input type="range" id="live-font-size" min="12" max="24" value="16">
+                    <span id="font-size-value">16px</span>
+                  </div>
+                  <div class="control-group">
+                    <label>모서리 둥글기</label>
+                    <input type="range" id="live-border-radius" min="0" max="30" value="12">
+                    <span id="border-radius-value">12px</span>
+                  </div>
+                </div>
+
+                <div class="live-preview-box" id="css-preview-box">
+                  <div class="preview-content-inner">
+                    <h4>실시간 미리보기</h4>
+                    <p>이 카드의 스타일이 실시간으로 변경됩니다</p>
+                    <button class="btn btn-primary btn-sm">테스트 버튼</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- HTML 라이브 테스트 -->
+              <div class="live-test-card">
+                <div class="test-header">
+                  <h3>📝 HTML 라이브 테스트</h3>
+                  <button class="btn btn-secondary btn-sm" id="apply-html">적용</button>
+                </div>
+                <div class="test-description">
+                  HTML 코드를 작성하면 즉시 렌더링됩니다
+                </div>
+                
+                <textarea id="live-html-input" class="code-editor" rows="10" placeholder="HTML 코드를 입력하세요...">
+<div class="demo-card">
+  <h3>🎯 데모 카드</h3>
+  <p>이곳에 원하는 HTML을 입력하세요</p>
+  <button class="btn">클릭</button>
+</div></textarea>
+
+                <div class="live-preview-box" id="html-preview-box">
+                  <!-- 동적 HTML 렌더링 -->
+                </div>
+              </div>
+
+              <!-- JavaScript 라이브 테스트 -->
+              <div class="live-test-card">
+                <div class="test-header">
+                  <h3>⚡ JavaScript 라이브 테스트</h3>
+                  <button class="btn btn-primary btn-sm" id="run-js">실행</button>
+                </div>
+                <div class="test-description">
+                  JavaScript 코드를 실행하고 결과를 확인하세요
+                </div>
+                
+                <textarea id="live-js-input" class="code-editor" rows="10" placeholder="JavaScript 코드를 입력하세요...">
+// 예제: 현재 시간 표시
+const now = new Date();
+console.log('현재 시간:', now.toLocaleString('ko-KR'));
+
+// 알림 표시
+showNotification('JavaScript 실행 완료!', 'success');
+
+// 결과 반환
+return `테스트 실행 시간: ${now.toLocaleTimeString('ko-KR')}`;</textarea>
+
+                <div class="live-preview-box">
+                  <div class="console-output" id="js-console-output">
+                    <div class="console-header">📋 실행 결과</div>
+                    <div class="console-content" id="js-result">
+                      코드를 실행하면 여기에 결과가 표시됩니다
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="live-tips">
+              <h3>💡 Hot Reload 팁</h3>
+              <div class="tips-grid">
+                <div class="tip-card">
+                  <div class="tip-icon">💾</div>
+                  <h4>파일 저장 시 자동 반영</h4>
+                  <p>styles.css, renderer.js, index.html 파일을 수정하고 저장하면 앱이 자동으로 새로고침됩니다</p>
+                </div>
+                <div class="tip-card">
+                  <div class="tip-icon">🎨</div>
+                  <h4>CSS 실시간 테스트</h4>
+                  <p>위의 컨트롤을 사용하여 색상과 스타일을 실시간으로 변경하고 최종 값을 styles.css에 적용하세요</p>
+                </div>
+                <div class="tip-card">
+                  <div class="tip-icon">🔄</div>
+                  <h4>즉시 피드백</h4>
+                  <p>코드 변경 → 저장 → 즉시 반영 (약 1초 이내)</p>
+                </div>
+                <div class="tip-card">
+                  <div class="tip-icon">🚀</div>
+                  <h4>개발 속도 향상</h4>
+                  <p>앱 재시작 없이 빠른 반복 개발이 가능합니다</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 스크린샷 탭 -->
+        <div id="screenshots-preview" class="preview-content">
+          <div class="preview-section">
+            <h2>📸 GOYO 시스템 스크린샷</h2>
+            <p class="section-description">실제 화면 캡처를 통해 GOYO 시스템의 모든 기능을 미리 확인하세요</p>
+
+            <div class="screenshots-grid">
+              <!-- 메인 대시보드 -->
+              <div class="screenshot-card">
+                <div class="screenshot-header">
+                  <h3>📊 메인 대시보드</h3>
+                  <span class="screenshot-badge main">핵심</span>
+                </div>
+                <div class="screenshot-image-container">
+                  <img src="https://www.genspark.ai/api/files/s/JLjZTJ2N" alt="GOYO 메인 대시보드" class="screenshot-image">
+                  <div class="screenshot-overlay">
+                    <button class="btn-view-fullscreen" onclick="viewFullscreen(this.previousElementSibling.previousElementSibling)">
+                      🔍 크게 보기
+                    </button>
+                  </div>
+                </div>
+                <div class="screenshot-description">
+                  <p><strong>실시간 감정 모니터링 대시보드</strong></p>
+                  <ul class="screenshot-features">
+                    <li>✅ 전체 인력 현황 (8명)</li>
+                    <li>✅ 위험도별 통계 (안정 5명, 주의 2명, 위험 1명)</li>
+                    <li>✅ 감정 분포 도넛 차트</li>
+                    <li>✅ 번아웃 추이 라인 그래프</li>
+                    <li>✅ 실시간 알림 패널</li>
+                    <li>✅ 인력 상태 리스트</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 리스크 알림 -->
+              <div class="screenshot-card">
+                <div class="screenshot-header">
+                  <h3>⚠️ 리스크 알림</h3>
+                  <span class="screenshot-badge alert">긴급</span>
+                </div>
+                <div class="screenshot-image-container">
+                  <div class="screenshot-placeholder">
+                    <div class="placeholder-icon">⚠️</div>
+                    <p>조기 경보 시스템 화면</p>
+                    <small>고위험군 자동 감지 및 알림</small>
+                  </div>
+                </div>
+                <div class="screenshot-description">
+                  <p><strong>조기 경보 시스템</strong></p>
+                  <ul class="screenshot-features">
+                    <li>🚨 긴급 알림 (위험도 72점)</li>
+                    <li>🟡 주의 알림 (위험도 50-71점)</li>
+                    <li>📋 전체/활성/확인/해결 필터</li>
+                    <li>💡 AI 개입 방안 제안</li>
+                    <li>✅ 알림 확인 및 해결 처리</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 케어 인력 관리 -->
+              <div class="screenshot-card">
+                <div class="screenshot-header">
+                  <h3>👥 케어 인력 관리</h3>
+                  <span class="screenshot-badge crud">CRUD</span>
+                </div>
+                <div class="screenshot-image-container">
+                  <div class="screenshot-placeholder">
+                    <div class="placeholder-icon">👥</div>
+                    <p>인력 관리 테이블</p>
+                    <small>Full CRUD 기능</small>
+                  </div>
+                </div>
+                <div class="screenshot-description">
+                  <p><strong>완전한 CRUD 시스템</strong></p>
+                  <ul class="screenshot-features">
+                    <li>➕ 인력 추가 (모달 폼)</li>
+                    <li>✏️ 인력 정보 수정</li>
+                    <li>🗑️ 인력 삭제 (확인 절차)</li>
+                    <li>🔍 실시간 검색 (debounce)</li>
+                    <li>🏷️ 부서/상태 필터링</li>
+                    <li>📊 테이블 정렬 기능</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 심리상담 연계 -->
+              <div class="screenshot-card">
+                <div class="screenshot-header">
+                  <h3>🧠 심리상담 연계</h3>
+                  <span class="screenshot-badge new">AI</span>
+                </div>
+                <div class="screenshot-image-container">
+                  <div class="screenshot-placeholder">
+                    <div class="placeholder-icon">🧠</div>
+                    <p>자동 상담 연계 화면</p>
+                    <small>AI 매칭 시스템</small>
+                  </div>
+                </div>
+                <div class="screenshot-description">
+                  <p><strong>자동 심리상담 연계</strong></p>
+                  <ul class="screenshot-features">
+                    <li>🤖 고위험군 자동 감지</li>
+                    <li>👨‍⚕️ 상담사 스마트 매칭</li>
+                    <li>📅 24시간 내 상담 예약</li>
+                    <li>📊 상담사 가용성 관리</li>
+                    <li>📝 상담 이력 추적</li>
+                    <li>🔄 후속 조치 스케줄링</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 데이터 수집 -->
+              <div class="screenshot-card">
+                <div class="screenshot-header">
+                  <h3>📱 데이터 수집</h3>
+                  <span class="screenshot-badge feature">7가지</span>
+                </div>
+                <div class="screenshot-image-container">
+                  <div class="screenshot-placeholder">
+                    <div class="placeholder-icon">📱</div>
+                    <p>다중 채널 데이터 수집</p>
+                    <small>7가지 수집 방식</small>
+                  </div>
+                </div>
+                <div class="screenshot-description">
+                  <p><strong>7가지 데이터 수집 방식</strong></p>
+                  <ul class="screenshot-features">
+                    <li>📝 직접 입력 (6개 감정 카드)</li>
+                    <li>👨‍💼 관리자 입력 (면담 기록)</li>
+                    <li>📊 일괄 입력 (테이블)</li>
+                    <li>📱 모바일 체크인 (5개 이모지)</li>
+                    <li>📸 얼굴 인식 AI 분석</li>
+                    <li>⌚ 웨어러블 센서 자동 수집</li>
+                    <li>📋 최근 기록 (20건)</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 얼굴 인식 AI -->
+              <div class="screenshot-card">
+                <div class="screenshot-header">
+                  <h3>📸 얼굴 인식 AI</h3>
+                  <span class="screenshot-badge ai">AI</span>
+                </div>
+                <div class="screenshot-image-container">
+                  <div class="screenshot-placeholder">
+                    <div class="placeholder-icon">📸</div>
+                    <p>AI 감정 분석 화면</p>
+                    <small>WebRTC 카메라 + AI</small>
+                  </div>
+                </div>
+                <div class="screenshot-description">
+                  <p><strong>AI 기반 감정 분석</strong></p>
+                  <ul class="screenshot-features">
+                    <li>📷 웹캠 실시간 촬영</li>
+                    <li>🤖 6가지 감정 자동 인식</li>
+                    <li>📊 신뢰도 점수 (60-100%)</li>
+                    <li>📈 4가지 지표 분석</li>
+                    <li>📝 자동 폼 완성</li>
+                    <li>🔒 개인정보 보호 (즉시 삭제)</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 웨어러블 시뮬레이션 -->
+              <div class="screenshot-card">
+                <div class="screenshot-header">
+                  <h3>⌚ 웨어러블 센서</h3>
+                  <span class="screenshot-badge realtime">실시간</span>
+                </div>
+                <div class="screenshot-image-container">
+                  <div class="screenshot-placeholder">
+                    <div class="placeholder-icon">⌚</div>
+                    <p>센서 데이터 모니터</p>
+                    <small>4가지 생체 지표</small>
+                  </div>
+                </div>
+                <div class="screenshot-description">
+                  <p><strong>웨어러블 자동 수집</strong></p>
+                  <ul class="screenshot-features">
+                    <li>💓 심박수 (60-100 bpm)</li>
+                    <li>😰 스트레스 지수 (0-100)</li>
+                    <li>😴 수면 품질 (0-100%)</li>
+                    <li>🚶 활동량 (걸음 수)</li>
+                    <li>⚠️ 고스트레스 자동 감지</li>
+                    <li>📈 실시간 타임라인</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- 데이터 분석 -->
+              <div class="screenshot-card">
+                <div class="screenshot-header">
+                  <h3>📈 데이터 분석</h3>
+                  <span class="screenshot-badge analytics">분석</span>
+                </div>
+                <div class="screenshot-image-container">
+                  <div class="screenshot-placeholder">
+                    <div class="placeholder-icon">📈</div>
+                    <p>다차원 데이터 분석</p>
+                    <small>6개 차트</small>
+                  </div>
+                </div>
+                <div class="screenshot-description">
+                  <p><strong>6가지 분석 차트</strong></p>
+                  <ul class="screenshot-features">
+                    <li>📊 부서별 감정 비교</li>
+                    <li>📈 월별 번아웃 추이</li>
+                    <li>🎯 감정 타입 분포</li>
+                    <li>📉 주간 감정 변화</li>
+                    <li>🔍 개인별 상세 분석</li>
+                    <li>📊 960+ 로그 기반 정확도</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- 시스템 요구사항 -->
+            <div class="system-requirements">
+              <h3>💻 시스템 요구사항</h3>
+              <div class="requirements-grid">
+                <div class="requirement-card">
+                  <h4>최소 사양</h4>
+                  <ul>
+                    <li>CPU: Intel i3 또는 동급</li>
+                    <li>RAM: 4GB</li>
+                    <li>저장공간: 500MB</li>
+                    <li>OS: Windows 10, macOS 10.14, Ubuntu 18.04</li>
+                  </ul>
+                </div>
+                <div class="requirement-card">
+                  <h4>권장 사양</h4>
+                  <ul>
+                    <li>CPU: Intel i5 이상</li>
+                    <li>RAM: 8GB 이상</li>
+                    <li>저장공간: 1GB</li>
+                    <li>OS: Windows 11, macOS 12+, Ubuntu 22.04</li>
+                  </ul>
+                </div>
+                <div class="requirement-card">
+                  <h4>추가 요구사항</h4>
+                  <ul>
+                    <li>인터넷 연결 (초기 설치)</li>
+                    <li>웹캠 (얼굴 인식 기능용)</li>
+                    <li>마이크 (선택사항)</li>
+                    <li>1920x1080 이상 해상도 권장</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 실시간 모니터 탭 -->
+        <div id="realtime-preview" class="preview-content">
+          <div class="preview-section">
+            <div class="realtime-header">
+              <h2>📡 실시간 시스템 모니터</h2>
+              <div class="realtime-status">
+                <span class="status-indicator pulse active"></span>
+                <span>라이브 연결됨</span>
+                <span class="update-time" id="realtime-last-update">방금 전</span>
+              </div>
+            </div>
+            
+            <div class="realtime-description">
+              <p>
+                <strong>시스템의 모든 변화를 실시간으로 추적합니다!</strong><br>
+                데이터 변경, API 호출, 사용자 액션이 즉시 반영됩니다.
+              </p>
+            </div>
+
+            <!-- 실시간 통계 대시보드 -->
+            <div class="realtime-stats-grid">
+              <div class="realtime-stat-card">
+                <div class="stat-icon pulse">📊</div>
+                <div class="stat-info">
+                  <div class="stat-label">전체 감정 로그</div>
+                  <div class="stat-value" id="rt-total-logs">0</div>
+                  <div class="stat-change" id="rt-logs-change">변화 없음</div>
+                </div>
+              </div>
+              
+              <div class="realtime-stat-card">
+                <div class="stat-icon pulse">🚨</div>
+                <div class="stat-info">
+                  <div class="stat-label">활성 알림</div>
+                  <div class="stat-value" id="rt-active-alerts">0</div>
+                  <div class="stat-change" id="rt-alerts-change">변화 없음</div>
+                </div>
+              </div>
+              
+              <div class="realtime-stat-card">
+                <div class="stat-icon pulse">👥</div>
+                <div class="stat-info">
+                  <div class="stat-label">케어 인력</div>
+                  <div class="stat-value" id="rt-total-workers">0</div>
+                  <div class="stat-change" id="rt-workers-change">변화 없음</div>
+                </div>
+              </div>
+              
+              <div class="realtime-stat-card">
+                <div class="stat-icon pulse">🧠</div>
+                <div class="stat-info">
+                  <div class="stat-label">상담 세션</div>
+                  <div class="stat-value" id="rt-sessions">0</div>
+                  <div class="stat-change" id="rt-sessions-change">변화 없음</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 실시간 활동 로그 -->
+            <div class="realtime-activity-section">
+              <div class="activity-header">
+                <h3>🔔 실시간 활동 로그</h3>
+                <div class="activity-controls">
+                  <button class="btn btn-sm btn-secondary" id="rt-clear-log">로그 지우기</button>
+                  <button class="btn btn-sm btn-primary" id="rt-pause-log">일시정지</button>
+                </div>
+              </div>
+              
+              <div class="activity-log-container" id="realtime-activity-log">
+                <div class="activity-item info">
+                  <span class="activity-time">방금 전</span>
+                  <span class="activity-icon">ℹ️</span>
+                  <span class="activity-message">실시간 모니터링이 시작되었습니다</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 실시간 데이터 차트 -->
+            <div class="realtime-chart-section">
+              <h3>📈 실시간 데이터 트렌드</h3>
+              <canvas id="realtime-trend-chart" height="80"></canvas>
+            </div>
+
+            <!-- 빠른 액션 버튼 -->
+            <div class="realtime-actions">
+              <h3>⚡ 빠른 테스트 액션</h3>
+              <div class="action-buttons-grid">
+                <button class="btn btn-primary" id="rt-add-log">
+                  📝 감정 로그 추가
+                </button>
+                <button class="btn btn-warning" id="rt-create-alert">
+                  🚨 알림 생성
+                </button>
+                <button class="btn btn-success" id="rt-add-worker">
+                  👤 인력 추가
+                </button>
+                <button class="btn btn-info" id="rt-refresh-data">
+                  🔄 데이터 새로고침
+                </button>
+              </div>
+            </div>
+
+            <!-- 시스템 성능 모니터 -->
+            <div class="realtime-performance">
+              <h3>⚡ 시스템 성능</h3>
+              <div class="performance-grid">
+                <div class="performance-card">
+                  <div class="perf-label">평균 응답 시간</div>
+                  <div class="perf-value" id="rt-avg-response">- ms</div>
+                </div>
+                <div class="performance-card">
+                  <div class="perf-label">총 API 호출</div>
+                  <div class="perf-value" id="rt-api-calls">0</div>
+                </div>
+                <div class="performance-card">
+                  <div class="perf-label">메모리 사용</div>
+                  <div class="perf-value" id="rt-memory-usage">- MB</div>
+                </div>
+                <div class="performance-card">
+                  <div class="perf-label">업타임</div>
+                  <div class="perf-value" id="rt-uptime">0초</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 기능 테스트 탭 -->
+        <div id="test-preview" class="preview-content">
+          <div class="preview-section">
+            <h2>🧪 기능 테스트 센터</h2>
+            <p class="section-description">모든 주요 기능을 한 곳에서 빠르게 테스트하세요</p>
+
+            <div class="test-suite-grid">
+              <!-- 알림 시스템 테스트 -->
+              <div class="test-suite-card">
+                <h3>🔔 알림 시스템 테스트</h3>
+                <div class="test-buttons">
+                  <button class="btn btn-success btn-sm" onclick="showNotification('✅ 성공 알림 테스트', 'success')">
+                    성공 알림
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="showNotification('❌ 에러 알림 테스트', 'error')">
+                    에러 알림
+                  </button>
+                  <button class="btn btn-warning btn-sm" onclick="showNotification('⚠️ 경고 알림 테스트', 'warning')">
+                    경고 알림
+                  </button>
+                  <button class="btn btn-info btn-sm" onclick="showNotification('ℹ️ 정보 알림 테스트', 'info')">
+                    정보 알림
+                  </button>
+                </div>
+              </div>
+
+              <!-- 데이터 생성 테스트 -->
+              <div class="test-suite-card">
+                <h3>📊 데이터 생성 테스트</h3>
+                <div class="test-buttons">
+                  <button class="btn btn-primary btn-sm" id="test-add-emotion">
+                    감정 로그 추가
+                  </button>
+                  <button class="btn btn-primary btn-sm" id="test-add-alert">
+                    리스크 알림 생성
+                  </button>
+                  <button class="btn btn-primary btn-sm" id="test-add-session">
+                    상담 세션 생성
+                  </button>
+                </div>
+                <div class="test-result" id="data-test-result"></div>
+              </div>
+
+              <!-- 카메라 테스트 -->
+              <div class="test-suite-card">
+                <h3>📷 카메라 접근 테스트</h3>
+                <div class="test-buttons">
+                  <button class="btn btn-primary btn-sm" id="test-camera">
+                    카메라 권한 확인
+                  </button>
+                </div>
+                <div class="test-result" id="camera-test-result"></div>
+              </div>
+
+              <!-- 차트 렌더링 테스트 -->
+              <div class="test-suite-card">
+                <h3>📈 차트 렌더링 테스트</h3>
+                <div class="test-buttons">
+                  <button class="btn btn-primary btn-sm" id="test-chart">
+                    샘플 차트 생성
+                  </button>
+                </div>
+                <canvas id="test-chart-canvas" width="400" height="200" style="display:none; margin-top:15px;"></canvas>
+              </div>
+
+              <!-- 성능 테스트 -->
+              <div class="test-suite-card">
+                <h3>⚡ 성능 테스트</h3>
+                <div class="test-buttons">
+                  <button class="btn btn-primary btn-sm" id="test-performance">
+                    성능 측정 시작
+                  </button>
+                </div>
+                <div class="test-result" id="performance-test-result"></div>
+              </div>
+
+              <!-- API 연결 테스트 -->
+              <div class="test-suite-card">
+                <h3>🔌 API 연결 테스트</h3>
+                <div class="test-buttons">
+                  <button class="btn btn-primary btn-sm" id="test-api">
+                    모든 API 테스트
+                  </button>
+                </div>
+                <div class="test-result" id="api-test-result"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 전체 개요 탭 -->
+        <div id="overview-preview" class="preview-content active">
+          <div class="preview-section">
+            <h2>🎯 GOYO란?</h2>
+            <div class="feature-highlight-box">
+              <p class="highlight-text">
+                <strong>GOYO (GOal-oriented Youth Operations)</strong>는 케어 환경의 
+                <span class="gradient-text">감정 운영 인텔리전스</span> 시스템입니다.
+              </p>
+              <p>
+                케어 인력의 감정 신호를 측정 가능한 운영 데이터로 전환하여, 
+                <strong>번아웃을 예방</strong>하고 조직의 지속 가능성을 높입니다.
+              </p>
+            </div>
+          </div>
+
+          <div class="preview-section">
+            <h2>📊 시스템 구성</h2>
+            <div class="system-overview-grid">
+              <div class="system-card">
+                <div class="system-icon">📊</div>
+                <h3>실시간 모니터링</h3>
+                <p>케어 인력의 감정 상태를 실시간으로 추적하고 시각화합니다.</p>
+                <ul class="feature-list">
+                  <li>✓ 5개 통계 카드</li>
+                  <li>✓ 2개 실시간 차트</li>
+                  <li>✓ 알림 패널</li>
+                  <li>✓ 인력 현황 리스트</li>
+                </ul>
+              </div>
+
+              <div class="system-card">
+                <div class="system-icon">🔔</div>
+                <h3>조기 경보</h3>
+                <p>위험 신호를 조기에 감지하여 예방적 개입을 가능하게 합니다.</p>
+                <ul class="feature-list">
+                  <li>✓ 4단계 위험도 분류</li>
+                  <li>✓ 실시간 알림</li>
+                  <li>✓ 개입 방안 제안</li>
+                  <li>✓ 알림 이력 추적</li>
+                </ul>
+              </div>
+
+              <div class="system-card">
+                <div class="system-icon">👥</div>
+                <h3>인력 관리</h3>
+                <p>케어 인력의 정보와 감정 이력을 통합 관리합니다.</p>
+                <ul class="feature-list">
+                  <li>✓ Full CRUD 기능</li>
+                  <li>✓ 실시간 검색</li>
+                  <li>✓ 다중 필터</li>
+                  <li>✓ 상세 프로필</li>
+                </ul>
+              </div>
+
+              <div class="system-card">
+                <div class="system-icon">📈</div>
+                <h3>데이터 분석</h3>
+                <p>감정 데이터를 다양한 관점에서 분석하고 인사이트를 도출합니다.</p>
+                <ul class="feature-list">
+                  <li>✓ 6종류 차트</li>
+                  <li>✓ 부서별 비교</li>
+                  <li>✓ 시간별 추이</li>
+                  <li>✓ 패턴 분석</li>
+                </ul>
+              </div>
+
+              <div class="system-card">
+                <div class="system-icon">📝</div>
+                <h3>리포트 시스템</h3>
+                <p>주기별 리포트를 자동 생성하여 의사결정을 지원합니다.</p>
+                <ul class="feature-list">
+                  <li>✓ 4종류 리포트</li>
+                  <li>✓ 자동 생성</li>
+                  <li>✓ 이력 관리</li>
+                  <li>✓ 인사이트 제공</li>
+                </ul>
+              </div>
+
+              <div class="system-card highlight">
+                <div class="system-icon">🧠</div>
+                <h3>심리상담 연계</h3>
+                <p>고위험군을 자동 감지하여 전문 상담사와 즉시 연계합니다.</p>
+                <ul class="feature-list">
+                  <li>✓ 자동 매칭</li>
+                  <li>✓ 상담사 관리</li>
+                  <li>✓ 세션 추적</li>
+                  <li>✓ 결과 기록</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-section">
+            <h2>📊 주요 통계</h2>
+            <div class="stats-showcase">
+              <div class="stat-showcase-item">
+                <div class="stat-showcase-number">4,407</div>
+                <div class="stat-showcase-label">총 코드 라인</div>
+              </div>
+              <div class="stat-showcase-item">
+                <div class="stat-showcase-number">28</div>
+                <div class="stat-showcase-label">API 엔드포인트</div>
+              </div>
+              <div class="stat-showcase-item">
+                <div class="stat-showcase-number">8</div>
+                <div class="stat-showcase-label">데이터베이스 테이블</div>
+              </div>
+              <div class="stat-showcase-item">
+                <div class="stat-showcase-number">6</div>
+                <div class="stat-showcase-label">주요 뷰</div>
+              </div>
+              <div class="stat-showcase-item">
+                <div class="stat-showcase-number">6</div>
+                <div class="stat-showcase-label">차트 종류</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 주요 기능 탭 -->
+        <div id="features-preview" class="preview-content">
+          <div class="features-grid">
+            <div class="feature-demo-card">
+              <div class="feature-demo-header">
+                <h3>📊 실시간 대시보드</h3>
+                <span class="feature-badge">Core</span>
+              </div>
+              <div class="feature-demo-body">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%231a1f2e' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' fill='%23667eea' font-size='20' text-anchor='middle' dominant-baseline='middle'%3E대시보드 스크린샷%3C/text%3E%3C/svg%3E" alt="Dashboard" class="feature-screenshot">
+                <p>전체 인력 현황, 감정 상태 분포, 번아웃 추이를 실시간으로 모니터링</p>
+                <div class="feature-tech-tags">
+                  <span class="tech-tag">Chart.js</span>
+                  <span class="tech-tag">실시간 업데이트</span>
+                  <span class="tech-tag">반응형</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="feature-demo-card">
+              <div class="feature-demo-header">
+                <h3>🔔 조기 경보 시스템</h3>
+                <span class="feature-badge alert">Critical</span>
+              </div>
+              <div class="feature-demo-body">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%231a1f2e' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' fill='%23ef4444' font-size='20' text-anchor='middle' dominant-baseline='middle'%3E알림 시스템 스크린샷%3C/text%3E%3C/svg%3E" alt="Alerts" class="feature-screenshot">
+                <p>위험도별 알림 분류, 개입 방안 자동 제안, 알림 확인 및 해결 관리</p>
+                <div class="feature-tech-tags">
+                  <span class="tech-tag">위험도 분석</span>
+                  <span class="tech-tag">자동 알림</span>
+                  <span class="tech-tag">개입 제안</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="feature-demo-card">
+              <div class="feature-demo-header">
+                <h3>🧠 심리상담 연계</h3>
+                <span class="feature-badge new">NEW</span>
+              </div>
+              <div class="feature-demo-body">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%231a1f2e' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' fill='%234ade80' font-size='20' text-anchor='middle' dominant-baseline='middle'%3E상담 연계 스크린샷%3C/text%3E%3C/svg%3E" alt="Counseling" class="feature-screenshot">
+                <p>고위험군 자동 감지 → 가용 상담사 매칭 → 세션 진행 → 결과 추적</p>
+                <div class="feature-tech-tags">
+                  <span class="tech-tag">자동 매칭</span>
+                  <span class="tech-tag">상담사 관리</span>
+                  <span class="tech-tag">이력 추적</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="feature-demo-card">
+              <div class="feature-demo-header">
+                <h3>👥 인력 관리</h3>
+                <span class="feature-badge">CRUD</span>
+              </div>
+              <div class="feature-demo-body">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%231a1f2e' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' fill='%23fbbf24' font-size='20' text-anchor='middle' dominant-baseline='middle'%3E인력 관리 스크린샷%3C/text%3E%3C/svg%3E" alt="Workers" class="feature-screenshot">
+                <p>인력 추가/수정/삭제, 실시간 검색, 부서/상태 필터링, 상세 프로필</p>
+                <div class="feature-tech-tags">
+                  <span class="tech-tag">Full CRUD</span>
+                  <span class="tech-tag">실시간 검색</span>
+                  <span class="tech-tag">다중 필터</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="feature-demo-card">
+              <div class="feature-demo-header">
+                <h3>📈 데이터 분석</h3>
+                <span class="feature-badge">Analytics</span>
+              </div>
+              <div class="feature-demo-body">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%231a1f2e' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' fill='%23667eea' font-size='20' text-anchor='middle' dominant-baseline='middle'%3E분석 차트 스크린샷%3C/text%3E%3C/svg%3E" alt="Analytics" class="feature-screenshot">
+                <p>부서별 비교, 월별 추이, 감정 분포, 주간 변화 등 다각도 분석</p>
+                <div class="feature-tech-tags">
+                  <span class="tech-tag">6종 차트</span>
+                  <span class="tech-tag">인터랙티브</span>
+                  <span class="tech-tag">인사이트</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="feature-demo-card">
+              <div class="feature-demo-header">
+                <h3>📝 리포트 생성</h3>
+                <span class="feature-badge">Report</span>
+              </div>
+              <div class="feature-demo-body">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%231a1f2e' width='400' height='250'/%3E%3Ctext x='50%25' y='50%25' fill='%238e9aaf' font-size='20' text-anchor='middle' dominant-baseline='middle'%3E리포트 스크린샷%3C/text%3E%3C/svg%3E" alt="Reports" class="feature-screenshot">
+                <p>주간/월간/분기/위험 분석 리포트 자동 생성 및 이력 관리</p>
+                <div class="feature-tech-tags">
+                  <span class="tech-tag">자동 생성</span>
+                  <span class="tech-tag">4종 리포트</span>
+                  <span class="tech-tag">PDF 저장</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 워크플로우 탭 -->
+        <div id="workflow-preview" class="preview-content">
+          <div class="preview-section">
+            <h2>🔄 완전한 케어 워크플로우</h2>
+            <div class="workflow-diagram">
+              <div class="workflow-step">
+                <div class="workflow-number">1</div>
+                <div class="workflow-icon">📊</div>
+                <h3>감정 모니터링</h3>
+                <p>케어 인력의 일상적인 감정 데이터를 수집하고 분석합니다.</p>
+                <div class="workflow-details">
+                  <span class="detail-tag">감정 로그 기록</span>
+                  <span class="detail-tag">실시간 분석</span>
+                  <span class="detail-tag">패턴 감지</span>
+                </div>
+              </div>
+
+              <div class="workflow-arrow">➜</div>
+
+              <div class="workflow-step">
+                <div class="workflow-number">2</div>
+                <div class="workflow-icon">🔔</div>
+                <h3>조기 경보</h3>
+                <p>부정 감정 증가나 번아웃 위험도 상승 시 즉시 알림을 발생시킵니다.</p>
+                <div class="workflow-details">
+                  <span class="detail-tag alert">위험도 72% 이상</span>
+                  <span class="detail-tag">실시간 알림</span>
+                  <span class="detail-tag">우선순위 분류</span>
+                </div>
+              </div>
+
+              <div class="workflow-arrow">➜</div>
+
+              <div class="workflow-step highlight">
+                <div class="workflow-number">3</div>
+                <div class="workflow-icon">🧠</div>
+                <h3>자동 연계</h3>
+                <p>고위험군을 자동으로 감지하여 가용한 상담사와 즉시 매칭합니다.</p>
+                <div class="workflow-details">
+                  <span class="detail-tag new">자동 매칭</span>
+                  <span class="detail-tag">24시간 내 예약</span>
+                  <span class="detail-tag">긴급 우선처리</span>
+                </div>
+              </div>
+
+              <div class="workflow-arrow">➜</div>
+
+              <div class="workflow-step">
+                <div class="workflow-number">4</div>
+                <div class="workflow-icon">💬</div>
+                <h3>상담 진행</h3>
+                <p>전문 상담사가 개입하여 심리 상담을 진행합니다.</p>
+                <div class="workflow-details">
+                  <span class="detail-tag">전문 상담</span>
+                  <span class="detail-tag">세션 관리</span>
+                  <span class="detail-tag">실시간 기록</span>
+                </div>
+              </div>
+
+              <div class="workflow-arrow">➜</div>
+
+              <div class="workflow-step">
+                <div class="workflow-number">5</div>
+                <div class="workflow-icon">📝</div>
+                <h3>결과 기록</h3>
+                <p>상담 결과와 후속 조치를 상세히 기록합니다.</p>
+                <div class="workflow-details">
+                  <span class="detail-tag">상담 결과</span>
+                  <span class="detail-tag">후속 일정</span>
+                  <span class="detail-tag">이력 저장</span>
+                </div>
+              </div>
+
+              <div class="workflow-arrow">➜</div>
+
+              <div class="workflow-step">
+                <div class="workflow-number">6</div>
+                <div class="workflow-icon">🔍</div>
+                <h3>지속 모니터링</h3>
+                <p>개입 효과를 추적하고 필요시 재개입합니다.</p>
+                <div class="workflow-details">
+                  <span class="detail-tag">효과 측정</span>
+                  <span class="detail-tag">재평가</span>
+                  <span class="detail-tag">지속 관리</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-section">
+            <h2>⚡ 핵심 가치</h2>
+            <div class="value-props">
+              <div class="value-card">
+                <div class="value-icon">🎯</div>
+                <h3>예방적 개입</h3>
+                <p>"위기가 되기 전에 감지"하여 조기에 개입함으로써 번아웃을 사전에 방지합니다.</p>
+              </div>
+              <div class="value-card">
+                <div class="value-icon">💰</div>
+                <h3>운영 비용 절감</h3>
+                <p>감정 리스크 감소는 이직률 감소로 이어지며, 결과적으로 운영 비용을 크게 절감합니다.</p>
+              </div>
+              <div class="value-card">
+                <div class="value-icon">📊</div>
+                <h3>데이터 기반 의사결정</h3>
+                <p>감정을 측정 가능한 데이터로 전환하여 관리하고, 관리하면 개선할 수 있습니다.</p>
+              </div>
+              <div class="value-card">
+                <div class="value-icon">🔄</div>
+                <h3>완전한 사이클</h3>
+                <p>감지부터 개입, 추적까지 완전한 케어 사이클을 자동화하여 지속 가능한 케어 환경을 구축합니다.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 데모 시나리오 탭 -->
+        <div id="demo-preview" class="preview-content">
+          <div class="preview-section">
+            <h2>🎯 5분 데모 시나리오</h2>
+            
+            <div class="demo-timeline">
+              <div class="demo-step">
+                <div class="demo-time">0:00 - 0:30</div>
+                <div class="demo-content">
+                  <h3>1️⃣ 오프닝 (30초)</h3>
+                  <div class="demo-script">
+                    <p class="demo-line">"안녕하세요. GOYO 감정 운영 인텔리전스 시스템입니다."</p>
+                    <p class="demo-line">"케어 현장에서 가장 큰 문제는 무엇일까요?"</p>
+                    <p class="demo-line strong">"바로 <span class="highlight">번아웃의 늦은 발견</span>과 <span class="highlight">사후 대응</span>입니다."</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="demo-step">
+                <div class="demo-time">0:30 - 1:30</div>
+                <div class="demo-content">
+                  <h3>2️⃣ 문제 인식 (1분)</h3>
+                  <div class="demo-script">
+                    <p class="demo-line">"현재 케어 현장에서는..."</p>
+                    <ul class="demo-list">
+                      <li>감정 변화를 감지하기 어렵습니다</li>
+                      <li>사건 발생 후에야 대응합니다</li>
+                      <li>의사결정에 감정 데이터가 부족합니다</li>
+                    </ul>
+                    <p class="demo-line strong">"GOYO는 이 모든 문제를 해결합니다."</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="demo-step highlight">
+                <div class="demo-time">1:30 - 3:30</div>
+                <div class="demo-content">
+                  <h3>3️⃣ 솔루션 제시 (2분)</h3>
+                  <div class="demo-actions">
+                    <div class="action-item">
+                      <strong>➡️ 대시보드 표시</strong>
+                      <p>"실시간으로 8명 케어 인력의 감정 상태를 모니터링합니다."</p>
+                    </div>
+                    <div class="action-item">
+                      <strong>➡️ 알림 클릭</strong>
+                      <p>"김미영님의 부정 감정이 85% 증가, 번아웃 위험도 72%입니다."</p>
+                    </div>
+                    <div class="action-item">
+                      <strong>➡️ 개입 방안 표시</strong>
+                      <p>"시스템이 4단계 개입 방안을 자동으로 제시합니다."</p>
+                    </div>
+                    <div class="action-item new">
+                      <strong>➡️ 상담 연계 탭 이동</strong>
+                      <p>"고위험군을 자동 감지하여 전문 상담사와 즉시 연계했습니다."</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="demo-step">
+                <div class="demo-time">3:30 - 4:30</div>
+                <div class="demo-content">
+                  <h3>4️⃣ 데이터 근거 (1분)</h3>
+                  <div class="demo-script">
+                    <p class="demo-line">"데이터 분석 탭으로 이동합니다."</p>
+                    <ul class="demo-list">
+                      <li>📊 부서별 감정 상태 비교 차트</li>
+                      <li>📈 월별 번아웃 추이 분석</li>
+                      <li>🎯 감정 유형별 분포 시각화</li>
+                    </ul>
+                    <p class="demo-line strong">"감정을 측정하면 관리할 수 있고, 관리하면 개선할 수 있습니다."</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="demo-step">
+                <div class="demo-time">4:30 - 5:00</div>
+                <div class="demo-content">
+                  <h3>5️⃣ 클로징 (30초)</h3>
+                  <div class="demo-script">
+                    <p class="demo-line strong highlight">"GOYO는 감지 → 경보 → 연계 → 개입 → 추적의 완전한 케어 사이클을 제공합니다."</p>
+                    <p class="demo-line">"감정 리스크 감소는 이직률 감소로 이어지고,"</p>
+                    <p class="demo-line">"결과적으로 <span class="highlight">운영 비용을 절감</span>합니다."</p>
+                    <p class="demo-line strong">"GOYO는 미래 케어 조직의 Emotional Operations Layer입니다."</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-section">
+            <h2>✅ 시연 체크리스트</h2>
+            <div class="checklist-grid">
+              <div class="checklist-card">
+                <h4>🔧 기술 체크</h4>
+                <ul class="checklist">
+                  <li>✓ 인터넷 연결 확인</li>
+                  <li>✓ 애플리케이션 정상 작동</li>
+                  <li>✓ 모든 뷰 로딩 테스트</li>
+                  <li>✓ 차트 렌더링 확인</li>
+                  <li>✓ 데이터베이스 초기화</li>
+                </ul>
+              </div>
+              <div class="checklist-card">
+                <h4>🎬 시연 준비</h4>
+                <ul class="checklist">
+                  <li>✓ 대시보드에서 시작</li>
+                  <li>✓ 김미영 고위험 케이스 준비</li>
+                  <li>✓ 상담 연계 예제 확인</li>
+                  <li>✓ 차트 데이터 확인</li>
+                  <li>✓ 타이밍 연습 (5분)</li>
+                </ul>
+              </div>
+              <div class="checklist-card">
+                <h4>💬 강조 포인트</h4>
+                <ul class="checklist">
+                  <li>✓ "위기 전 감지"</li>
+                  <li>✓ "자동 연계" (NEW)</li>
+                  <li>✓ "완전한 사이클"</li>
+                  <li>✓ "운영 비용 절감"</li>
+                  <li>✓ "데이터 기반 결정"</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 데이터 수집 뷰 -->
+      <div id="data-collection-view" class="view">
+        <div class="view-header">
+          <h1>📝 실시간 감정 데이터 수집</h1>
+          <p class="view-subtitle">다양한 방식으로 케어 인력의 감정 데이터를 수집합니다</p>
+        </div>
+
+        <!-- 데이터 수집 방식 선택 -->
+        <div class="collection-methods-grid">
+          <div class="method-card active" data-method="self">
+            <div class="method-icon">📝</div>
+            <h3>직접 입력</h3>
+            <p>인력이 직접 감정 상태 체크인</p>
+            <span class="method-status available">사용 가능</span>
+          </div>
+          
+          <div class="method-card active" data-method="manager">
+            <div class="method-icon">👨‍💼</div>
+            <h3>관리자 입력</h3>
+            <p>관리자가 면담 후 데이터 입력</p>
+            <span class="method-status available">사용 가능</span>
+          </div>
+          
+          <div class="method-card" data-method="auto">
+            <div class="method-icon">🤖</div>
+            <h3>자동 수집</h3>
+            <p>웨어러블/센서 데이터 자동 반영</p>
+            <span class="method-status future">향후 예정</span>
+          </div>
+          
+          <div class="method-card" data-method="mobile">
+            <div class="method-icon">📱</div>
+            <h3>모바일 체크인</h3>
+            <p>QR/이모지 기반 간편 체크인</p>
+            <span class="method-status future">향후 예정</span>
+          </div>
+        </div>
+
+        <!-- 탭 선택 -->
+        <div class="collection-tabs">
+          <button class="collection-tab-btn active" data-tab="self-input">📝 직접 입력</button>
+          <button class="collection-tab-btn" data-tab="manager-input">👨‍💼 관리자 입력</button>
+          <button class="collection-tab-btn" data-tab="batch-input">📊 일괄 입력</button>
+          <button class="collection-tab-btn" data-tab="mobile-checkin">📱 모바일 체크인</button>
+          <button class="collection-tab-btn" data-tab="auto-collection">🤖 자동 수집</button>
+          <button class="collection-tab-btn" data-tab="recent-logs">📋 최근 기록</button>
+        </div>
+
+        <!-- 직접 입력 탭 -->
+        <div id="self-input-tab" class="collection-tab-content active">
+          <div class="input-section-card">
+            <div class="section-header">
+              <h3>📝 감정 상태 체크인</h3>
+              <p>오늘의 감정 상태를 선택해주세요</p>
+            </div>
+
+            <form id="self-checkin-form">
+              <div class="form-row">
+                <div class="form-group full-width">
+                  <label for="self-worker-select">이름 선택 *</label>
+                  <select id="self-worker-select" required>
+                    <option value="">선택하세요</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>오늘의 감정 상태 *</label>
+                <div class="emotion-grid">
+                  <label class="emotion-option">
+                    <input type="radio" name="emotion" value="긍정적" required>
+                    <div class="emotion-card positive">
+                      <div class="emotion-emoji">😊</div>
+                      <div class="emotion-label">긍정적</div>
+                      <div class="emotion-desc">활기차고 행복한 상태</div>
+                    </div>
+                  </label>
+
+                  <label class="emotion-option">
+                    <input type="radio" name="emotion" value="만족">
+                    <div class="emotion-card satisfied">
+                      <div class="emotion-emoji">😌</div>
+                      <div class="emotion-label">만족</div>
+                      <div class="emotion-desc">편안하고 만족스러운 상태</div>
+                    </div>
+                  </label>
+
+                  <label class="emotion-option">
+                    <input type="radio" name="emotion" value="중립적">
+                    <div class="emotion-card neutral">
+                      <div class="emotion-emoji">😐</div>
+                      <div class="emotion-label">중립적</div>
+                      <div class="emotion-desc">평범한 일상적 상태</div>
+                    </div>
+                  </label>
+
+                  <label class="emotion-option">
+                    <input type="radio" name="emotion" value="피로">
+                    <div class="emotion-card tired">
+                      <div class="emotion-emoji">😓</div>
+                      <div class="emotion-label">피로</div>
+                      <div class="emotion-desc">몸과 마음이 지친 상태</div>
+                    </div>
+                  </label>
+
+                  <label class="emotion-option">
+                    <input type="radio" name="emotion" value="스트레스">
+                    <div class="emotion-card stressed">
+                      <div class="emotion-emoji">😰</div>
+                      <div class="emotion-label">스트레스</div>
+                      <div class="emotion-desc">압박감과 불안감</div>
+                    </div>
+                  </label>
+
+                  <label class="emotion-option">
+                    <input type="radio" name="emotion" value="부정적">
+                    <div class="emotion-card negative">
+                      <div class="emotion-emoji">😢</div>
+                      <div class="emotion-label">부정적</div>
+                      <div class="emotion-desc">힘들고 우울한 상태</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="self-intensity">감정 강도 *</label>
+                <div class="intensity-slider">
+                  <input type="range" id="self-intensity" min="1" max="10" value="5" required>
+                  <div class="intensity-labels">
+                    <span>약함 (1)</span>
+                    <span id="intensity-value">5</span>
+                    <span>강함 (10)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="self-notes">추가 메모 (선택)</label>
+                <textarea id="self-notes" rows="3" placeholder="오늘 특별히 기록하고 싶은 내용이 있나요?"></textarea>
+              </div>
+
+              <!-- 얼굴 인식 체크인 섹션 -->
+              <div class="facial-checkin-section">
+                <div class="section-divider">
+                  <span>또는</span>
+                </div>
+
+                <div class="facial-option-card">
+                  <div class="facial-header">
+                    <h4>📸 얼굴 인식 자동 체크인</h4>
+                    <span class="badge badge-new">AI</span>
+                  </div>
+                  <p class="facial-desc">카메라로 얼굴을 촬영하면 AI가 자동으로 감정을 분석합니다</p>
+                  
+                  <div class="camera-container">
+                    <video id="self-camera-video" autoplay playsinline></video>
+                    <canvas id="self-camera-canvas" style="display: none;"></canvas>
+                    
+                    <div id="self-camera-preview" class="camera-preview">
+                      <div class="camera-placeholder">
+                        <div class="camera-icon">📷</div>
+                        <p>카메라로 얼굴을 촬영하세요</p>
+                        <small>AI가 자동으로 감정을 분석합니다</small>
+                      </div>
+                    </div>
+
+                    <div id="self-captured-photo" class="captured-photo" style="display: none;">
+                      <img id="self-photo-preview" src="" alt="촬영된 사진">
+                      <div class="photo-overlay">
+                        <button type="button" class="btn-icon btn-retake" id="self-retake-photo" title="다시 촬영">
+                          🔄
+                        </button>
+                      </div>
+                    </div>
+
+                    <div id="self-analysis-result" class="analysis-result" style="display: none;">
+                      <div class="analysis-header">
+                        <span class="analysis-icon">🤖</span>
+                        <strong>AI 감정 분석 결과</strong>
+                      </div>
+                      <div class="analysis-content">
+                        <div class="detected-emotion">
+                          <span class="emotion-emoji-large" id="self-detected-emoji">😊</span>
+                          <div class="emotion-info">
+                            <div class="emotion-name" id="self-detected-emotion">긍정적</div>
+                            <div class="emotion-confidence">
+                              신뢰도: <span id="self-confidence">95</span>%
+                            </div>
+                          </div>
+                        </div>
+                        <div class="analysis-details" id="self-analysis-details">
+                          <!-- 감정 분석 상세 정보 -->
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="camera-controls">
+                    <button type="button" class="btn btn-secondary" id="self-start-camera">
+                      📷 카메라 시작
+                    </button>
+                    <button type="button" class="btn btn-primary" id="self-capture-photo" style="display: none;">
+                      📸 사진 촬영
+                    </button>
+                    <button type="button" class="btn btn-success" id="self-analyze-face" style="display: none;">
+                      🤖 AI 감정 분석
+                    </button>
+                  </div>
+
+                  <div class="facial-info">
+                    <small>💡 <strong>개인정보 보호:</strong> 촬영된 사진은 감정 분석 후 즉시 삭제되며, 감정 데이터만 저장됩니다.</small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-large">
+                  ✅ 체크인 완료
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- 관리자 입력 탭 -->
+        <div id="manager-input-tab" class="collection-tab-content">
+          <div class="input-section-card">
+            <div class="section-header">
+              <h3>👨‍💼 관리자 감정 기록</h3>
+              <p>면담 결과 또는 관찰 내용을 기록합니다</p>
+            </div>
+
+            <form id="manager-input-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="manager-worker-select">대상 인력 *</label>
+                  <select id="manager-worker-select" required>
+                    <option value="">선택하세요</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="manager-date">기록 일자 *</label>
+                  <input type="date" id="manager-date" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>관찰된 감정 상태 *</label>
+                <div class="emotion-select-row">
+                  <label class="emotion-chip">
+                    <input type="radio" name="manager-emotion" value="긍정적" required>
+                    <span class="chip positive">😊 긍정적</span>
+                  </label>
+                  <label class="emotion-chip">
+                    <input type="radio" name="manager-emotion" value="만족">
+                    <span class="chip satisfied">😌 만족</span>
+                  </label>
+                  <label class="emotion-chip">
+                    <input type="radio" name="manager-emotion" value="중립적">
+                    <span class="chip neutral">😐 중립적</span>
+                  </label>
+                  <label class="emotion-chip">
+                    <input type="radio" name="manager-emotion" value="피로">
+                    <span class="chip tired">😓 피로</span>
+                  </label>
+                  <label class="emotion-chip">
+                    <input type="radio" name="manager-emotion" value="스트레스">
+                    <span class="chip stressed">😰 스트레스</span>
+                  </label>
+                  <label class="emotion-chip">
+                    <input type="radio" name="manager-emotion" value="부정적">
+                    <span class="chip negative">😢 부정적</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="manager-intensity">감정 강도 *</label>
+                  <select id="manager-intensity" required>
+                    <option value="">선택하세요</option>
+                    <option value="1">1 - 매우 약함</option>
+                    <option value="2">2 - 약함</option>
+                    <option value="3">3 - 약간 약함</option>
+                    <option value="4">4 - 보통 이하</option>
+                    <option value="5">5 - 보통</option>
+                    <option value="6">6 - 보통 이상</option>
+                    <option value="7">7 - 약간 강함</option>
+                    <option value="8">8 - 강함</option>
+                    <option value="9">9 - 매우 강함</option>
+                    <option value="10">10 - 극도로 강함</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="manager-source">기록 출처 *</label>
+                  <select id="manager-source" required>
+                    <option value="면담">1:1 면담</option>
+                    <option value="관찰">직접 관찰</option>
+                    <option value="회의">팀 회의</option>
+                    <option value="동료">동료 피드백</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="manager-notes">상세 관찰 내용 *</label>
+                <textarea id="manager-notes" rows="4" placeholder="면담 내용, 관찰 결과, 특이사항 등을 상세히 기록해주세요..." required></textarea>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-large">
+                  💾 기록 저장
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- 일괄 입력 탭 -->
+        <div id="batch-input-tab" class="collection-tab-content">
+          <div class="input-section-card">
+            <div class="section-header">
+              <h3>📊 일괄 데이터 입력</h3>
+              <p>여러 인력의 감정 데이터를 한 번에 입력합니다</p>
+            </div>
+
+            <div class="batch-input-container">
+              <div class="batch-header">
+                <button class="btn btn-secondary" id="add-batch-row">+ 인력 추가</button>
+                <button class="btn btn-primary" id="submit-batch">💾 일괄 저장</button>
+              </div>
+
+              <div class="batch-table-container">
+                <table class="batch-input-table">
+                  <thead>
+                    <tr>
+                      <th>이름</th>
+                      <th>감정 상태</th>
+                      <th>강도</th>
+                      <th>메모</th>
+                      <th>작업</th>
+                    </tr>
+                  </thead>
+                  <tbody id="batch-input-body">
+                    <!-- 동적 생성 -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 모바일 체크인 탭 -->
+        <div id="mobile-checkin-tab" class="collection-tab-content">
+          <div class="input-section-card">
+            <div class="section-header">
+              <h3>📱 모바일 체크인 시뮬레이션</h3>
+              <p>QR 코드 스캔 또는 간편 이모지 선택으로 빠른 감정 체크인</p>
+            </div>
+
+            <div class="mobile-demo-container">
+              <div class="mobile-screen">
+                <div class="mobile-header">
+                  <h4>GOYO 모바일</h4>
+                  <span class="mobile-time">14:23</span>
+                </div>
+
+                <div class="mobile-content">
+                  <div class="mobile-greeting">
+                    <h3>안녕하세요! 👋</h3>
+                    <p>오늘의 기분은 어떠신가요?</p>
+                  </div>
+
+                  <div class="mobile-emotion-selector">
+                    <label class="mobile-emotion-btn" data-emotion="매우 좋음">
+                      <input type="radio" name="mobile-emotion" value="긍정적">
+                      <div class="mobile-emoji">😊</div>
+                      <span>매우 좋음</span>
+                    </label>
+
+                    <label class="mobile-emotion-btn" data-emotion="좋음">
+                      <input type="radio" name="mobile-emotion" value="만족">
+                      <div class="mobile-emoji">🙂</div>
+                      <span>좋음</span>
+                    </label>
+
+                    <label class="mobile-emotion-btn" data-emotion="보통">
+                      <input type="radio" name="mobile-emotion" value="중립적">
+                      <div class="mobile-emoji">😐</div>
+                      <span>보통</span>
+                    </label>
+
+                    <label class="mobile-emotion-btn" data-emotion="안 좋음">
+                      <input type="radio" name="mobile-emotion" value="피로">
+                      <div class="mobile-emoji">😟</div>
+                      <span>안 좋음</span>
+                    </label>
+
+                    <label class="mobile-emotion-btn" data-emotion="매우 안 좋음">
+                      <input type="radio" name="mobile-emotion" value="부정적">
+                      <div class="mobile-emoji">😢</div>
+                      <span>매우 안 좋음</span>
+                    </label>
+                  </div>
+
+                  <button class="mobile-submit-btn" id="mobile-submit">
+                    ✅ 체크인 완료
+                  </button>
+
+                  <div class="mobile-qr-section">
+                    <p class="mobile-qr-text">또는 QR 코드로 빠른 체크인</p>
+                    <div class="mobile-qr-placeholder">
+                      <div class="qr-icon">📷</div>
+                      <p>QR 코드 스캔</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mobile-features">
+                <h4>📱 모바일 체크인 특징</h4>
+                <ul class="feature-list-mobile">
+                  <li>✓ 3초 만에 완료되는 빠른 체크인</li>
+                  <li>✓ 직관적인 이모지 선택</li>
+                  <li>✓ QR 코드 스캔 지원</li>
+                  <li>✓ 위치 기반 자동 체크인</li>
+                  <li>✓ 푸시 알림 리마인더</li>
+                  <li>✓ 오프라인 모드 지원</li>
+                </ul>
+
+                <div class="implementation-note">
+                  <strong>💡 구현 방식:</strong>
+                  <p>React Native 또는 Flutter로 개발하여 iOS/Android 네이티브 앱으로 제공. 백엔드 API는 현재 시스템과 동일하게 사용.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 자동 수집 시뮬레이션 탭 -->
+        <div id="auto-collection-tab" class="collection-tab-content">
+          <div class="input-section-card">
+            <div class="section-header">
+              <div class="header-with-button">
+                <div>
+                  <h3>🤖 자동 수집 시뮬레이션</h3>
+                  <p>웨어러블 디바이스 및 센서 데이터 자동 수집 데모</p>
+                </div>
+                <button class="btn btn-primary" id="start-simulation">
+                  ▶️ 시뮬레이션 시작
+                </button>
+              </div>
+            </div>
+
+            <div class="simulation-dashboard">
+              <div class="simulation-stats">
+                <div class="sim-stat-card">
+                  <div class="sim-stat-icon">📊</div>
+                  <div class="sim-stat-content">
+                    <div class="sim-stat-value" id="sim-total-count">0</div>
+                    <div class="sim-stat-label">총 수집 건수</div>
+                  </div>
+                </div>
+
+                <div class="sim-stat-card">
+                  <div class="sim-stat-icon">⚡</div>
+                  <div class="sim-stat-content">
+                    <div class="sim-stat-value" id="sim-active-devices">0</div>
+                    <div class="sim-stat-label">활성 디바이스</div>
+                  </div>
+                </div>
+
+                <div class="sim-stat-card">
+                  <div class="sim-stat-icon">💓</div>
+                  <div class="sim-stat-content">
+                    <div class="sim-stat-value" id="sim-avg-heartrate">--</div>
+                    <div class="sim-stat-label">평균 심박수</div>
+                  </div>
+                </div>
+
+                <div class="sim-stat-card">
+                  <div class="sim-stat-icon">😰</div>
+                  <div class="sim-stat-content">
+                    <div class="sim-stat-value" id="sim-avg-stress">--</div>
+                    <div class="sim-stat-label">평균 스트레스</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sensor-grid">
+                <div class="sensor-monitor" id="sensor-monitor-container">
+                  <!-- 동적 생성 -->
+                </div>
+              </div>
+
+              <div class="simulation-timeline">
+                <h4>📈 실시간 데이터 수집 타임라인</h4>
+                <div class="timeline-container" id="simulation-timeline">
+                  <div class="timeline-empty">
+                    <p>시뮬레이션을 시작하면 실시간 데이터 수집이 표시됩니다.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="simulation-info">
+                <h4>🔬 자동 수집 시뮬레이션 정보</h4>
+                <div class="info-grid">
+                  <div class="info-card">
+                    <h5>💓 심박수 (BPM)</h5>
+                    <p>정상 범위: 60-100 bpm</p>
+                    <p>높은 심박수는 스트레스 또는 불안 신호</p>
+                  </div>
+
+                  <div class="info-card">
+                    <h5>😰 스트레스 지수</h5>
+                    <p>범위: 0-100</p>
+                    <p>70 이상: 고위험, 50-70: 주의, 50 이하: 정상</p>
+                  </div>
+
+                  <div class="info-card">
+                    <h5>😴 수면 품질</h5>
+                    <p>범위: 0-100%</p>
+                    <p>70% 이상: 양호, 50-70%: 보통, 50% 이하: 불량</p>
+                  </div>
+
+                  <div class="info-card">
+                    <h5>🚶 활동량 (걸음 수)</h5>
+                    <p>권장: 일 7,000-10,000 걸음</p>
+                    <p>낮은 활동량은 우울감과 연관</p>
+                  </div>
+                </div>
+
+                <div class="implementation-note">
+                  <strong>💡 실제 구현 방식:</strong>
+                  <ul>
+                    <li>• Apple Watch / Fitbit / Galaxy Watch 등 웨어러블 기기 연동</li>
+                    <li>• HealthKit (iOS) / Google Fit (Android) API 사용</li>
+                    <li>• 10분마다 자동 동기화</li>
+                    <li>• 비정상 수치 감지 시 즉시 알림</li>
+                    <li>• 개인정보 암호화 및 동의 기반 수집</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 최근 기록 탭 -->
+        <div id="recent-logs-tab" class="collection-tab-content">
+          <div class="input-section-card">
+            <div class="section-header">
+              <h3>📋 최근 감정 기록</h3>
+              <p>최근 입력된 감정 데이터 내역</p>
+            </div>
+
+            <div class="filter-bar">
+              <select id="log-worker-filter">
+                <option value="all">전체 인력</option>
+              </select>
+              <select id="log-emotion-filter">
+                <option value="all">전체 감정</option>
+                <option value="긍정적">긍정적</option>
+                <option value="만족">만족</option>
+                <option value="중립적">중립적</option>
+                <option value="피로">피로</option>
+                <option value="스트레스">스트레스</option>
+                <option value="부정적">부정적</option>
+              </select>
+              <select id="log-period-filter">
+                <option value="today">오늘</option>
+                <option value="week">최근 7일</option>
+                <option value="month">최근 30일</option>
+              </select>
+            </div>
+
+            <div id="recent-logs-container">
+              <!-- 동적 생성 -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 개입 방안 모달 -->
+  <div id="intervention-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>💡 개입 방안 제안</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body" id="intervention-content">
+        <!-- 동적 생성 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 인력 추가/수정 모달 -->
+  <div id="worker-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="worker-modal-title">인력 추가</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="worker-form">
+          <input type="hidden" id="worker-id">
+          <div class="form-group">
+            <label for="worker-name">이름 *</label>
+            <input type="text" id="worker-name" required>
+          </div>
+          <div class="form-group">
+            <label for="worker-role">역할 *</label>
+            <select id="worker-role" required>
+              <option value="">선택하세요</option>
+              <option value="요양보호사">요양보호사</option>
+              <option value="간호사">간호사</option>
+              <option value="사회복지사">사회복지사</option>
+              <option value="물리치료사">물리치료사</option>
+              <option value="관리자">관리자</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="worker-team">부서 *</label>
+            <select id="worker-team" required>
+              <option value="">선택하세요</option>
+              <option value="A팀">A팀</option>
+              <option value="B팀">B팀</option>
+              <option value="C팀">C팀</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="worker-hire-date">입사일 *</label>
+            <input type="date" id="worker-hire-date" required>
+          </div>
+          <div class="form-group">
+            <label for="worker-phone">연락처</label>
+            <input type="tel" id="worker-phone" placeholder="010-0000-0000">
+          </div>
+          <div class="form-group">
+            <label for="worker-email">이메일</label>
+            <input type="email" id="worker-email" placeholder="email@goyo.kr">
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeWorkerModal()">취소</button>
+            <button type="submit" class="btn btn-primary">저장</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 알림 해결 모달 -->
+  <div id="resolve-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>✅ 알림 해결</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="resolve-form">
+          <input type="hidden" id="resolve-alert-id">
+          <div class="form-group">
+            <label for="resolve-notes">해결 내용 *</label>
+            <textarea id="resolve-notes" rows="5" placeholder="어떻게 해결했는지 설명해주세요..." required></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeResolveModal()">취소</button>
+            <button type="submit" class="btn btn-primary">해결 완료</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 상담사 추가/수정 모달 -->
+  <div id="counselor-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="counselor-modal-title">상담사 추가</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="counselor-form">
+          <input type="hidden" id="counselor-id">
+          <div class="form-group">
+            <label for="counselor-name">이름 *</label>
+            <input type="text" id="counselor-name" required>
+          </div>
+          <div class="form-group">
+            <label for="counselor-license">자격증 *</label>
+            <input type="text" id="counselor-license" placeholder="예: 임상심리사 1급" required>
+          </div>
+          <div class="form-group">
+            <label for="counselor-specialties">전문 분야 *</label>
+            <input type="text" id="counselor-specialties" placeholder="예: 번아웃, 스트레스, 우울" required>
+          </div>
+          <div class="form-group">
+            <label for="counselor-phone">연락처 *</label>
+            <input type="tel" id="counselor-phone" placeholder="010-0000-0000" required>
+          </div>
+          <div class="form-group">
+            <label for="counselor-email">이메일 *</label>
+            <input type="email" id="counselor-email" placeholder="counselor@goyo.kr" required>
+          </div>
+          <div class="form-group">
+            <label for="counselor-availability">가용성 상태 *</label>
+            <select id="counselor-availability" required>
+              <option value="available">가능</option>
+              <option value="busy">바쁨</option>
+              <option value="unavailable">불가능</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeCounselorModal()">취소</button>
+            <button type="submit" class="btn btn-primary">저장</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Web-compatible renderer -->
+  <script src="renderer-web.js"></script>
+</body>
+</html>

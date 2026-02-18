@@ -6,7 +6,9 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
-    "dev:verbose": "electron . --dev --trace-warnings"
+    "dev:verbose": "electron . --dev --trace-warnings",
+    "web": "node web-server.js",
+    "web:dev": "./web-dev.sh"
   },
   "keywords": [
     "emotional-intelligence",
